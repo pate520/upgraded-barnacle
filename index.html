@@ -96,6 +96,28 @@
         .analysis-chart-title { font-size: 15px; color: rgba(0, 244, 255, 1); font-weight: 500; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .analysis-chart-title::before { content: ''; width: 4px; height: 16px; background: rgba(0, 244, 255, 1); border-radius: 2px; }
         .analysis-chart-box { height: 200px; position: relative; }
+        /* 文档页样式 */
+        .doc-container { padding: 0 16px 32px; }
+        .doc-hero { background: linear-gradient(135deg, rgba(0,244,255,0.15), rgba(0,244,255,0.05)); border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(0,244,255,0.12); }
+        .doc-title { font-size: 20px; font-weight: 700; color: rgba(0, 244, 255, 1); margin-bottom: 8px; }
+        .doc-subtitle { font-size: 14px; color: #aaa; line-height: 1.5; }
+        .doc-section { background: #111; border: 1px solid #1f1f1f; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .doc-section-title { font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 8px; }
+        .doc-section-text { font-size: 14px; color: #cfcfcf; line-height: 1.6; }
+        .doc-bullet { margin-top: 8px; padding-left: 14px; color: #cfcfcf; }
+        .doc-bullet li { margin-bottom: 6px; }
+        .doc-highlight { color: rgba(0, 244, 255, 1); font-weight: 600; }
+        .doc-line { margin: 6px 0; color: #cfcfcf; }
+        .doc-key { color: rgba(0, 244, 255, 1); margin-right: 6px; font-weight: 600; }
+        .doc-subline { margin-left: 18px; margin-top: 4px; color: #a8a8a8; font-size: 13px; }
+        .doc-subline.pending { color: #ef4444; }
+        .doc-code-list { margin-top: 10px; display: grid; gap: 10px; }
+        .doc-code-card { background: #0f0f0f; border: 1px solid #1f1f1f; border-radius: 10px; padding: 10px; position: relative; }
+        .doc-code-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: #cfcfcf; font-size: 13px; }
+        .doc-copy-btn { background: rgba(0, 244, 255, 0.12); border: 1px solid rgba(0, 244, 255, 0.4); color: rgba(0, 244, 255, 1); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .doc-copy-btn:hover { background: rgba(0, 244, 255, 0.2); }
+        .doc-copy-btn.copied { background: rgba(0, 244, 255, 0.25); color: #000; }
+        .doc-code { background: #050505; border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px; font-size: 13px; color: #dcdcdc; white-space: pre-wrap; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -104,7 +126,7 @@
         <div class="header">
             <div class="back-btn"></div>
             <div class="header-title">AI量化跟單</div>
-            <div class="rules-btn">規則說明</div>
+            <div class="rules-btn" onclick="openDocs()">规则说明</div>
         </div>
         <div class="container">
             <div class="card" data-name="AI Copy 熱紐扣驅動策略" data-min="100" data-max="2,000" data-rate-min="18" data-rate-max="20">
@@ -214,13 +236,13 @@
 
             <div class="chart-section">
                 <div class="chart-title">歷史盈利</div>
-                <div class="chart-summary">
-                    <div class="chart-summary-left">
+                    <div class="chart-summary">
+                        <div class="chart-summary-left">
                         <div class="chart-summary-label">收益率</div>
                         <div class="chart-summary-value green" id="detailYieldRate">1.77%</div>
-                    </div>
+                        </div>
                     <div class="chart-summary-right">
-                        <div class="chart-summary-label">收益額 (USD)</div>
+                        <div class="chart-summary-label">收益額 (USDT)</div>
                         <div class="chart-summary-value green" id="detailProfit">$7,106.82</div>
                     </div>
                 </div>
@@ -310,6 +332,91 @@
             <div class="agreement-text">我已閱讀並同意 <a href="#">《跟單風險協議》</a> 和 <a href="#">《跟單用戶協議》</a></div>
         </div>
         <button class="confirm-btn">確認</button>
+    </div>
+
+    <!-- 文档页 -->
+    <div id="docsPage" class="page">
+        <div class="header">
+            <div class="back-btn" onclick="closeDocs()"></div>
+            <div class="header-title">产品文档</div>
+            <div class="placeholder"></div>
+        </div>
+        <div class="doc-container">
+            <div class="doc-hero">
+                <div class="doc-title">产品文档</div>
+            </div>
+            <div class="doc-section">
+                <div class="doc-section-title">一、列表页卡片增加更多数据展示</div>
+                <div class="doc-section-text">
+                    <div class="doc-line"><span class="doc-key">参与人数：</span>列表展示实时参与人数。
+                        <div class="doc-subline pending">参与人数的起始值，以及日后增加的随机策略为：待定。</div>
+                    </div>
+                    <div class="doc-line"><span class="doc-key">收益额：</span>展示累计收益额。
+                        <div class="doc-subline pending">收益额的起始值，以及日后增加的随机策略为：待定。</div>
+                    </div>
+                    <div class="doc-line"><span class="doc-key">收益额图表：</span>列表卡片内保持迷你折线图，横坐标为最近 7 天的小时数据，零轴使用虚线，盈利段为绿色、亏损段为红色。</div>
+                    <div class="doc-line"><span class="doc-key">运行时间：</span>展示策略当前运行时长。
+                        <div class="doc-subline pending">运行时间的计算口径：待定。</div>
+                    </div>
+                    <div class="doc-line"><span class="doc-key">7 天最大回撤：</span>展示最近 7 天回撤指标。
+                        <div class="doc-subline">按最近 7 天收益计算，公式：最大回撤 = (最近 7 天内的最高收益峰值 - 当前收益) / 最近 7 天内的最高收益峰值。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="doc-section">
+                <div class="doc-section-title">二、详情页增加数据展示</div>
+                <div class="doc-section-text">
+                    <div class="doc-line"><span class="doc-key">历史盈利表格：</span>展示历史收益明细。
+                        <div class="doc-subline">横坐标：最近 7 天的小时图。</div>
+                        <div class="doc-subline">纵坐标：收益额，单位 USDT，刻度自适应（按数据范围自动取近似千位刻度）。</div>
+                        <div class="doc-subline pending">收益额（USDT）：对应时间的收益金额，起始值及增加策略：待定。</div>
+                        <div class="doc-subline">收益率（%）：对应理财包配置的收益率区间。</div>
+                        <div class="doc-subline pending">累计收益：截至当时的累计收益，起始值：待定。</div>
+                    </div>
+                    <div class="doc-line"><span class="doc-key">策略优势文案：</span>突出策略亮点与差异化。</div>
+                    <div class="doc-line"><span class="doc-key">组合收益表格：</span>列出组合收益数据。
+                        <div class="doc-subline">横坐标：最近 31 天（日维度）。</div>
+                        <div class="doc-subline">纵坐标：收益率%，刻度自适应。</div>
+                        <div class="doc-subline">组合收益：对应理财包配置的收益率随机。</div>
+                        <div class="doc-subline">基准收益：组合收益减去 5%-8% 随机的基准曲线。</div>
+                        <div class="doc-subline">Alpha：组合收益与基准的差值曲线。</div>
+                    </div>
+                    <div class="doc-line"><span class="doc-key">因子收益贡献：</span>展示各因子对收益的贡献。
+                        <div class="doc-subline pending">每个因子的起始值和增加策略：待定。</div>
+                    </div>
+                    <div class="doc-code-list">
+                        <div class="doc-code-card">
+                            <div class="doc-code-head">策略文案 1 <button class="doc-copy-btn" onclick="copyDocText('strategyText1', this)">复制</button></div>
+                            <pre class="doc-code"><code id="strategyText1">量化算法驱动：数学模型 + AI 算法，精准捕捉市场机会。</code></pre>
+                        </div>
+                        <div class="doc-code-card">
+                            <div class="doc-code-head">策略文案 2 <button class="doc-copy-btn" onclick="copyDocText('strategyText2', this)">复制</button></div>
+                            <pre class="doc-code"><code id="strategyText2">历史回测验证：基于真实历史数据，胜率、收益、回撤全透明。</code></pre>
+                        </div>
+                        <div class="doc-code-card">
+                            <div class="doc-code-head">策略文案 3 <button class="doc-copy-btn" onclick="copyDocText('strategyText3', this)">复制</button></div>
+                            <pre class="doc-code"><code id="strategyText3">多元资产配置：跨市场多币种分散风险，降低单一资产波动影响。</code></pre>
+                        </div>
+                        <div class="doc-code-card">
+                            <div class="doc-code-head">策略文案 4 <button class="doc-copy-btn" onclick="copyDocText('strategyText4', this)">复制</button></div>
+                            <pre class="doc-code"><code id="strategyText4">动态风控管理：24 小时智能监控，自动调仓与风险对冲。</code></pre>
+                        </div>
+                        <div class="doc-code-card">
+                            <div class="doc-code-head">策略文案 5 <button class="doc-copy-btn" onclick="copyDocText('strategyText5', this)">复制</button></div>
+                            <pre class="doc-code"><code id="strategyText5">自动操作：自动买卖下单，节省盯盘与操作时间。</code></pre>
+                        </div>
+                        <div class="doc-code-card">
+                            <div class="doc-code-head">策略文案 6 <button class="doc-copy-btn" onclick="copyDocText('strategyText6', this)">复制</button></div>
+                            <pre class="doc-code"><code id="strategyText6">从波动中获利：捕捉小幅波动机会，实现稳健收益。</code></pre>
+                        </div>
+                        <div class="doc-code-card">
+                            <div class="doc-code-head">策略文案 7 <button class="doc-copy-btn" onclick="copyDocText('strategyText7', this)">复制</button></div>
+                            <pre class="doc-code"><code id="strategyText7">策略稳定：保持一致的交易逻辑，减少情绪化干扰。</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -714,7 +821,42 @@
                 chartUpdateInterval = null;
             }
         }
+        function openDocs() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('docsPage').classList.add('active');
+            // 关闭可能存在的动态图表更新
+            if (chartUpdateInterval) {
+                clearInterval(chartUpdateInterval);
+                chartUpdateInterval = null;
+            }
+        }
+        function closeDocs() {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('listPage').classList.add('active');
+        }
+        function copyDocText(id, btn) {
+            const text = document.getElementById(id)?.innerText || '';
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const temp = document.createElement('textarea');
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+            }
+            if (btn) {
+                btn.textContent = '已复制';
+                btn.classList.add('copied');
+                clearTimeout(btn._copyTimer);
+                btn._copyTimer = setTimeout(() => {
+                    btn.textContent = '复制';
+                    btn.classList.remove('copied');
+                }, 1200);
+            }
+        }
     </script>
 </body>
 </html>
-
