@@ -1,125 +1,685 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI量化跟單</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #000; color: #fff; min-height: 100vh; }
-        .page { display: none; min-height: 100vh; }
-        .page.active { display: block; }
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 16px; position: sticky; top: 0; background: #000; z-index: 100; }
-        .back-btn { width: 32px; height: 32px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .back-btn::before { content: '‹'; font-size: 20px; color: #fff; }
-        .header-title { font-size: 18px; font-weight: 600; }
-        .rules-btn { font-size: 14px; color: #fff; cursor: pointer; }
-        .placeholder { width: 32px; }
-        .container { padding: 0 12px 24px; }
-        .card { background: #1a1a1a; border-radius: 16px; padding: 20px; margin-bottom: 12px; }
-        .card-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
-        .card-users { font-size: 13px; color: #888; margin-bottom: 16px; }
-        .card-users::before { content: '👥 '; }
-        .card-profit-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .card-profit-left { }
-        .card-profit-label { font-size: 13px; color: #888; margin-bottom: 4px; }
-        .card-profit-value { font-size: 20px; font-weight: 700; color: #0d956f; }
-        .card-chart { width: 120px; height: 50px; }
-        .card-chart svg { width: 100%; height: 100%; }
-        .card-stats { display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #333; }
-        .card-stat { text-align: center; flex: 1; }
-        .card-stat:first-child { text-align: left; }
-        .card-stat:last-child { text-align: right; }
-        .card-stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-        .card-stat-value { font-size: 14px; color: #fff; font-weight: 500; }
-        .card-extra { display: flex; justify-content: space-between; margin-bottom: 16px; }
-        .card-extra-item { }
-        .card-extra-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-        .card-extra-value { font-size: 14px; color: #fff; }
-        .join-btn { width: 100%; padding: 14px; margin-top: 16px; border-radius: 25px; background: rgba(0, 244, 255, 1); border: none; color: #000; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-        .join-btn:hover { background: rgba(0, 244, 255, 0.85); }
-        .limit-text { text-align: center; color: rgba(0, 244, 255, 1); font-size: 13px; margin-top: 12px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .page {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            background: #000;
+            z-index: 100;
+        }
+
+        .back-btn {
+            width: 32px;
+            height: 32px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .back-btn::before {
+            content: '‹';
+            font-size: 20px;
+            color: #fff;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .rules-btn {
+            font-size: 14px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .placeholder {
+            width: 32px;
+        }
+
+        .container {
+            padding: 0 12px 24px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .card-users {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .card-users::before {
+            content: '👥 ';
+        }
+
+        .card-profit-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-profit-left {}
+
+        .card-profit-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .card-profit-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0d956f;
+        }
+
+        .card-chart {
+            width: 120px;
+            height: 50px;
+        }
+
+        .card-chart svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .card-stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .card-stat:first-child {
+            text-align: left;
+        }
+
+        .card-stat:last-child {
+            text-align: right;
+        }
+
+        .card-stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .card-stat-value {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .card-extra {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-extra-item {}
+
+        .card-extra-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .card-extra-value {
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .join-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 16px;
+            border-radius: 25px;
+            background: rgba(0, 244, 255, 1);
+            border: none;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .join-btn:hover {
+            background: rgba(0, 244, 255, 0.85);
+        }
+
+        .limit-text {
+            text-align: center;
+            color: rgba(0, 244, 255, 1);
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
         /* 详情页样式 */
-        .detail-container { padding: 0 16px 100px; }
-        .section-label { font-size: 16px; color: #fff; margin: 20px 0 12px; font-weight: 500; }
-        .product-name { font-size: 18px; color: rgba(0, 244, 255, 1); margin-bottom: 20px; }
-        .input-box { display: flex; align-items: center; background: #1a1a1a; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
-        .input-box input { flex: 1; background: transparent; border: none; color: #fff; font-size: 16px; outline: none; }
-        .input-box input::placeholder { color: #666; }
-        .input-box .unit { color: #888; margin-right: 12px; }
-        .input-box .all-btn { color: rgba(0, 244, 255, 1); cursor: pointer; }
-        .balance-row { display: flex; align-items: center; color: #888; font-size: 14px; margin-bottom: 20px; }
-        .balance-row .add-icon { color: rgba(0, 244, 255, 1); margin-left: 6px; font-size: 18px; cursor: pointer; }
-        .info-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1a1a1a; }
-        .info-row .label { color: #888; font-size: 14px; }
-        .info-row .value { color: #fff; font-size: 14px; }
-        .info-row .value.highlight { color: #0d956f; }
-        .rule-item { display: flex; align-items: center; padding: 12px 0; }
-        .rule-dot { width: 8px; height: 8px; background: rgba(0, 244, 255, 1); border-radius: 50%; margin-right: 12px; }
-        .rule-label { flex: 1; color: #888; font-size: 14px; }
-        .rule-value { color: #fff; font-size: 14px; }
-        .agreement { display: flex; align-items: flex-start; padding: 20px 16px; }
-        .checkbox { width: 20px; height: 20px; border: 2px solid #444; border-radius: 50%; margin-right: 10px; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
-        .checkbox.checked { background: rgba(0, 244, 255, 1); border-color: rgba(0, 244, 255, 1); }
-        .agreement-text { font-size: 14px; color: #888; line-height: 1.5; }
-        .agreement-text a { color: rgba(0, 244, 255, 1); text-decoration: none; }
-        .confirm-btn { width: calc(100% - 32px); margin: 10px 16px 30px; padding: 14px; background: rgba(0, 244, 255, 1); border: none; border-radius: 25px; color: #000; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .detail-container {
+            padding: 0 16px 100px;
+        }
+
+        .section-label {
+            font-size: 16px;
+            color: #fff;
+            margin: 20px 0 12px;
+            font-weight: 500;
+        }
+
+        .product-name {
+            font-size: 18px;
+            color: rgba(0, 244, 255, 1);
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: center;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+        }
+
+        .input-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-box input::placeholder {
+            color: #666;
+        }
+
+        .input-box .unit {
+            color: #888;
+            margin-right: 12px;
+        }
+
+        .input-box .all-btn {
+            color: rgba(0, 244, 255, 1);
+            cursor: pointer;
+        }
+
+        .balance-row {
+            display: flex;
+            align-items: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .balance-row .add-icon {
+            color: rgba(0, 244, 255, 1);
+            margin-left: 6px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .info-row .label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .info-row .value {
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .info-row .value.highlight {
+            color: #0d956f;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .rule-dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(0, 244, 255, 1);
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .rule-label {
+            flex: 1;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .rule-value {
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .agreement {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px 16px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #444;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .checkbox.checked {
+            background: rgba(0, 244, 255, 1);
+            border-color: rgba(0, 244, 255, 1);
+        }
+
+        .agreement-text {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .agreement-text a {
+            color: rgba(0, 244, 255, 1);
+            text-decoration: none;
+        }
+
+        .confirm-btn {
+            width: calc(100% - 32px);
+            margin: 10px 16px 30px;
+            padding: 14px;
+            background: rgba(0, 244, 255, 1);
+            border: none;
+            border-radius: 25px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
         /* 详情页图表样式 */
-        .chart-section { background: #1a1a1a; border-radius: 12px; padding: 16px; margin: 16px 0; }
-        .chart-title { font-size: 18px; color: #fff; font-weight: 600; margin-bottom: 16px; }
-        .chart-summary { display: flex; justify-content: space-between; margin-bottom: 16px; }
-        .chart-summary-left, .chart-summary-right { }
-        .chart-summary-right { text-align: right; }
-        .chart-summary-label { font-size: 13px; color: #888; margin-bottom: 4px; }
-        .chart-summary-value { font-size: 22px; font-weight: 600; }
-        .chart-summary-value.green { color: #0d956f; }
-        .chart-summary-value.red { color: #e34d4d; }
-        .chart-container { position: relative; height: 200px; margin-top: 10px; }
-        .chart-tooltip { position: absolute; background: rgba(255,255,255,0.95); color: #222; padding: 8px 12px; border-radius: 8px; font-size: 13px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-        .chart-tooltip.show { opacity: 1; }
-        .chart-tooltip .tooltip-time { color: #666; margin-bottom: 4px; }
-        .chart-tooltip .tooltip-value { font-weight: 600; }
-        .chart-tooltip .tooltip-value.green { color: #0d956f; }
-        .chart-tooltip .tooltip-value.red { color: #e34d4d; }
+        .chart-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .chart-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .chart-summary-left,
+        .chart-summary-right {}
+
+        .chart-summary-right {
+            text-align: right;
+        }
+
+        .chart-summary-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .chart-summary-value {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .chart-summary-value.green {
+            color: #0d956f;
+        }
+
+        .chart-summary-value.red {
+            color: #e34d4d;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: 10px;
+        }
+
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-tooltip.show {
+            opacity: 1;
+        }
+
+        .chart-tooltip .tooltip-time {
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .chart-tooltip .tooltip-value {
+            font-weight: 600;
+        }
+
+        .chart-tooltip .tooltip-value.green {
+            color: #0d956f;
+        }
+
+        .chart-tooltip .tooltip-value.red {
+            color: #e34d4d;
+        }
+
         /* 策略优势样式 */
-        .strategy-features { margin-top: 12px; }
-        .feature-item { display: flex; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid #1a1a1a; }
-        .feature-item:last-child { border-bottom: none; }
-        .feature-icon { width: 32px; height: 32px; margin-right: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(0, 244, 255, 0.1); border-radius: 8px; }
-        .feature-icon svg { width: 18px; height: 18px; }
-        .feature-content { flex: 1; }
-        .feature-title { font-size: 15px; color: #fff; font-weight: 500; margin-bottom: 4px; }
-        .feature-desc { font-size: 13px; color: #888; line-height: 1.4; }
+        .strategy-features {
+            margin-top: 12px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 14px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 244, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .feature-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-size: 15px;
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .feature-desc {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.4;
+        }
+
         /* 收益分析图表样式 */
-        .analysis-chart-card { background: #1a1a1a; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-        .analysis-chart-title { font-size: 15px; color: rgba(0, 244, 255, 1); font-weight: 500; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .analysis-chart-title::before { content: ''; width: 4px; height: 16px; background: rgba(0, 244, 255, 1); border-radius: 2px; }
-        .analysis-chart-box { height: 200px; position: relative; }
+        .analysis-chart-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .analysis-chart-title {
+            font-size: 15px;
+            color: rgba(0, 244, 255, 1);
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-chart-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: rgba(0, 244, 255, 1);
+            border-radius: 2px;
+        }
+
+        .analysis-chart-box {
+            height: 200px;
+            position: relative;
+        }
+
+        .analysis-chart-desc {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
         /* 文档页样式 */
-        .doc-container { padding: 0 16px 32px; }
-        .doc-hero { background: linear-gradient(135deg, rgba(0,244,255,0.15), rgba(0,244,255,0.05)); border-radius: 14px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(0,244,255,0.12); }
-        .doc-title { font-size: 20px; font-weight: 700; color: rgba(0, 244, 255, 1); margin-bottom: 8px; }
-        .doc-subtitle { font-size: 14px; color: #aaa; line-height: 1.5; }
-        .doc-section { background: #111; border: 1px solid #1f1f1f; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-        .doc-section-title { font-size: 16px; color: #fff; font-weight: 600; margin-bottom: 8px; }
-        .doc-section-text { font-size: 14px; color: #cfcfcf; line-height: 1.6; }
-        .doc-bullet { margin-top: 8px; padding-left: 14px; color: #cfcfcf; }
-        .doc-bullet li { margin-bottom: 6px; }
-        .doc-highlight { color: rgba(0, 244, 255, 1); font-weight: 600; }
-        .doc-line { margin: 6px 0; color: #cfcfcf; }
-        .doc-key { color: rgba(0, 244, 255, 1); margin-right: 6px; font-weight: 600; }
-        .doc-subline { margin-left: 18px; margin-top: 4px; color: #a8a8a8; font-size: 13px; }
-        .doc-subline.pending { color: #ef4444; }
-        .doc-code-list { margin-top: 10px; display: grid; gap: 10px; }
-        .doc-code-card { background: #0f0f0f; border: 1px solid #1f1f1f; border-radius: 10px; padding: 10px; position: relative; }
-        .doc-code-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: #cfcfcf; font-size: 13px; }
-        .doc-copy-btn { background: rgba(0, 244, 255, 0.12); border: 1px solid rgba(0, 244, 255, 0.4); color: rgba(0, 244, 255, 1); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-        .doc-copy-btn:hover { background: rgba(0, 244, 255, 0.2); }
-        .doc-copy-btn.copied { background: rgba(0, 244, 255, 0.25); color: #000; }
-        .doc-code { background: #050505; border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px; font-size: 13px; color: #dcdcdc; white-space: pre-wrap; word-break: break-word; }
+        .doc-container {
+            padding: 0 16px 32px;
+        }
+
+        .doc-hero {
+            background: linear-gradient(135deg, rgba(0, 244, 255, 0.15), rgba(0, 244, 255, 0.05));
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0, 244, 255, 0.12);
+        }
+
+        .doc-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(0, 244, 255, 1);
+            margin-bottom: 8px;
+        }
+
+        .doc-subtitle {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.5;
+        }
+
+        .doc-section {
+            background: #111;
+            border: 1px solid #1f1f1f;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .doc-section-title {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .doc-section-text {
+            font-size: 14px;
+            color: #cfcfcf;
+            line-height: 1.6;
+        }
+
+        .doc-bullet {
+            margin-top: 8px;
+            padding-left: 14px;
+            color: #cfcfcf;
+        }
+
+        .doc-bullet li {
+            margin-bottom: 6px;
+        }
+
+        .doc-highlight {
+            color: rgba(0, 244, 255, 1);
+            font-weight: 600;
+        }
+
+        .doc-line {
+            margin: 6px 0;
+            color: #cfcfcf;
+        }
+
+        .doc-key {
+            color: rgba(0, 244, 255, 1);
+            margin-right: 6px;
+            font-weight: 600;
+        }
+
+        .doc-subline {
+            margin-left: 18px;
+            margin-top: 4px;
+            color: #a8a8a8;
+            font-size: 13px;
+        }
+
+        .doc-subline.pending {
+            color: #ef4444;
+        }
+
+        .doc-code-list {
+            margin-top: 10px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .doc-code-card {
+            background: #0f0f0f;
+            border: 1px solid #1f1f1f;
+            border-radius: 10px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .doc-code-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            color: #cfcfcf;
+            font-size: 13px;
+        }
+
+        .doc-copy-btn {
+            background: rgba(0, 244, 255, 0.12);
+            border: 1px solid rgba(0, 244, 255, 0.4);
+            color: rgba(0, 244, 255, 1);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .doc-copy-btn:hover {
+            background: rgba(0, 244, 255, 0.2);
+        }
+
+        .doc-copy-btn.copied {
+            background: rgba(0, 244, 255, 0.25);
+            color: #000;
+        }
+
+        .doc-code {
+            background: #050505;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+            color: #dcdcdc;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
     </style>
 </head>
+
 <body>
     <!-- 列表页 -->
     <div id="listPage" class="page active">
@@ -129,86 +689,138 @@
             <div class="rules-btn" onclick="openDocs()">规则说明</div>
         </div>
         <div class="container">
-            <div class="card" data-name="AI Copy 熱紐扣驅動策略" data-min="100" data-max="2,000" data-rate-min="18" data-rate-max="20">
+            <div class="card" data-name="AI Copy 熱紐扣驅動策略" data-min="100" data-max="2,000" data-rate-min="18"
+                data-rate-max="20">
                 <div class="card-title">AI Copy 熱紐扣驅動策略</div>
-                <div class="card-users">912666</div>
+                <div class="card-users">998921</div>
                 <div class="card-profit-row">
                     <div class="card-profit-left">
-                        <div class="card-profit-label">收益額 (USDT)</div>
-                        <div class="card-profit-value">$14,978.87</div>
+                        <div class="card-profit-label">累計收益率</div>
+                        <div class="card-profit-value">+456.8%</div>
                     </div>
                     <div class="card-chart"></div>
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><div class="card-stat-label">收益率</div><div class="card-stat-value">18%-20%</div></div>
-                    <div class="card-stat"><div class="card-stat-label">最小投資額</div><div class="card-stat-value">100 USDT</div></div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">收益率</div>
+                        <div class="card-stat-value">18%-20%</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">最小投資額</div>
+                        <div class="card-stat-value">100 USDT</div>
+                    </div>
                 </div>
                 <div class="card-extra">
-                    <div class="card-extra-item"><div class="card-extra-label">運行時間</div><div class="card-extra-value">6天 20時 12分</div></div>
-                    <div class="card-extra-item"><div class="card-extra-label">7天最大回撤</div><div class="card-extra-value">2.31%</div></div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">運行時間</div>
+                        <div class="card-extra-value">6天 20時 12分</div>
+                    </div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">近30天最大回撤</div>
+                        <div class="card-extra-value">5.42%</div>
+                    </div>
                 </div>
                 <button class="join-btn" onclick="openDetail(this)">立即參與</button>
                 <div class="limit-text">每月限參與1次</div>
             </div>
-            <div class="card" data-name="AI Copy Alpha主動式管理策略" data-min="2,000" data-max="9,999" data-rate-min="16" data-rate-max="20">
+            <div class="card" data-name="AI Copy Alpha主動式管理策略" data-min="2,000" data-max="9,999" data-rate-min="16"
+                data-rate-max="20">
                 <div class="card-title">AI Copy Alpha主動式管理策略</div>
-                <div class="card-users">697358</div>
+                <div class="card-users">713422</div>
                 <div class="card-profit-row">
                     <div class="card-profit-left">
-                        <div class="card-profit-label">收益額 (USDT)</div>
-                        <div class="card-profit-value">$23,456.12</div>
+                        <div class="card-profit-label">累計收益率</div>
+                        <div class="card-profit-value">+523.4%</div>
                     </div>
                     <div class="card-chart"></div>
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><div class="card-stat-label">收益率</div><div class="card-stat-value">16%-20%</div></div>
-                    <div class="card-stat"><div class="card-stat-label">最小投資額</div><div class="card-stat-value">2,000 USDT</div></div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">收益率</div>
+                        <div class="card-stat-value">16%-20%</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">最小投資額</div>
+                        <div class="card-stat-value">2,000 USDT</div>
+                    </div>
                 </div>
                 <div class="card-extra">
-                    <div class="card-extra-item"><div class="card-extra-label">運行時間</div><div class="card-extra-value">12天 8時 45分</div></div>
-                    <div class="card-extra-item"><div class="card-extra-label">7天最大回撤</div><div class="card-extra-value">1.85%</div></div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">運行時間</div>
+                        <div class="card-extra-value">12天 8時 45分</div>
+                    </div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">近30天最大回撤</div>
+                        <div class="card-extra-value">4.18%</div>
+                    </div>
                 </div>
                 <button class="join-btn" onclick="openDetail(this)">立即參與</button>
                 <div class="limit-text">每月限參與1次</div>
             </div>
-            <div class="card" data-name="AI雙向平衡策略" data-min="10,000" data-max="49,999" data-rate-min="15" data-rate-max="18">
+            <div class="card" data-name="AI雙向平衡策略" data-min="10,000" data-max="49,999" data-rate-min="15"
+                data-rate-max="18">
                 <div class="card-title">AI雙向平衡策略</div>
-                <div class="card-users">10504</div>
+                <div class="card-users">301322</div>
                 <div class="card-profit-row">
                     <div class="card-profit-left">
-                        <div class="card-profit-label">收益額 (USDT)</div>
-                        <div class="card-profit-value">$8,932.55</div>
+                        <div class="card-profit-label">累計收益率</div>
+                        <div class="card-profit-value">+312.6%</div>
                     </div>
                     <div class="card-chart"></div>
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><div class="card-stat-label">收益率</div><div class="card-stat-value">15%-18%</div></div>
-                    <div class="card-stat"><div class="card-stat-label">最小投資額</div><div class="card-stat-value">10,000 USDT</div></div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">收益率</div>
+                        <div class="card-stat-value">15%-18%</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">最小投資額</div>
+                        <div class="card-stat-value">10,000 USDT</div>
+                    </div>
                 </div>
                 <div class="card-extra">
-                    <div class="card-extra-item"><div class="card-extra-label">運行時間</div><div class="card-extra-value">3天 15時 30分</div></div>
-                    <div class="card-extra-item"><div class="card-extra-label">7天最大回撤</div><div class="card-extra-value">3.12%</div></div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">運行時間</div>
+                        <div class="card-extra-value">3天 15時 30分</div>
+                    </div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">近30天最大回撤</div>
+                        <div class="card-extra-value">7.35%</div>
+                    </div>
                 </div>
                 <button class="join-btn" onclick="openDetail(this)">立即參與</button>
                 <div class="limit-text">每月限參與1次</div>
             </div>
-            <div class="card" data-name="AI Alpha穩健策略-多幣種" data-min="50,000" data-max="99,999" data-rate-min="12" data-rate-max="16">
+            <div class="card" data-name="AI Alpha穩健策略-多幣種" data-min="50,000" data-max="99,999" data-rate-min="12"
+                data-rate-max="16">
                 <div class="card-title">AI Alpha穩健策略-多幣種</div>
-                <div class="card-users">3256</div>
+                <div class="card-users">145634</div>
                 <div class="card-profit-row">
                     <div class="card-profit-left">
-                        <div class="card-profit-label">收益額 (USDT)</div>
-                        <div class="card-profit-value">$5,621.33</div>
+                        <div class="card-profit-label">累計收益率</div>
+                        <div class="card-profit-value">+267.5%</div>
                     </div>
                     <div class="card-chart"></div>
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><div class="card-stat-label">收益率</div><div class="card-stat-value">12%-16%</div></div>
-                    <div class="card-stat"><div class="card-stat-label">最小投資額</div><div class="card-stat-value">50,000 USDT</div></div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">收益率</div>
+                        <div class="card-stat-value">12%-16%</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-label">最小投資額</div>
+                        <div class="card-stat-value">50,000 USDT</div>
+                    </div>
                 </div>
                 <div class="card-extra">
-                    <div class="card-extra-item"><div class="card-extra-label">運行時間</div><div class="card-extra-value">8天 5時 22分</div></div>
-                    <div class="card-extra-item"><div class="card-extra-label">7天最大回撤</div><div class="card-extra-value">1.56%</div></div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">運行時間</div>
+                        <div class="card-extra-value">8天 5時 22分</div>
+                    </div>
+                    <div class="card-extra-item">
+                        <div class="card-extra-label">近30天最大回撤</div>
+                        <div class="card-extra-value">3.67%</div>
+                    </div>
                 </div>
                 <button class="join-btn" onclick="openDetail(this)">立即參與</button>
                 <div class="limit-text">每月限參與1次</div>
@@ -236,14 +848,14 @@
 
             <div class="chart-section">
                 <div class="chart-title">歷史盈利</div>
-                    <div class="chart-summary">
-                        <div class="chart-summary-left">
+                <div class="chart-summary">
+                    <div class="chart-summary-left">
                         <div class="chart-summary-label">收益率</div>
                         <div class="chart-summary-value green" id="detailYieldRate">1.77%</div>
-                        </div>
+                    </div>
                     <div class="chart-summary-right">
-                        <div class="chart-summary-label">收益額 (USDT)</div>
-                        <div class="chart-summary-value green" id="detailProfit">$7,106.82</div>
+                        <div class="chart-summary-label">累計收益率</div>
+                        <div class="chart-summary-value green" id="detailProfit">+127.8%</div>
                     </div>
                 </div>
                 <div class="chart-container" id="detailChart"></div>
@@ -251,61 +863,106 @@
             </div>
 
             <div class="section-label">參與金額控制</div>
-            <div class="info-row"><span class="label">最少起投</span><span class="value" id="minAmount">100 USDT</span></div>
-            <div class="info-row"><span class="label">最大起投</span><span class="value" id="maxAmount">2,000 USDT</span></div>
+            <div class="info-row"><span class="label">最少起投</span><span class="value" id="minAmount">100 USDT</span>
+            </div>
+            <div class="info-row"><span class="label">最大起投</span><span class="value" id="maxAmount">2,000 USDT</span>
+            </div>
             <div class="info-row"><span class="label">收益幣種</span><span class="value">USDT</span></div>
             <div class="info-row"><span class="label">預計收益</span><span class="value highlight">每日 0.00 USDT</span></div>
             <div class="section-label">參與規則</div>
-            <div class="rule-item"><div class="rule-dot"></div><span class="rule-label">申購時間</span><span class="rule-value">2025-12-08 10:52</span></div>
-            <div class="rule-item"><div class="rule-dot"></div><span class="rule-label">計息開始</span><span class="rule-value">2025-12-08 23:00</span></div>
-            <div class="rule-item"><div class="rule-dot"></div><span class="rule-label">首筆收益發放</span><span class="rule-value">2025-12-09 23:00</span></div>
+            <div class="rule-item">
+                <div class="rule-dot"></div><span class="rule-label">申購時間</span><span class="rule-value">2025-12-08
+                    10:52</span>
+            </div>
+            <div class="rule-item">
+                <div class="rule-dot"></div><span class="rule-label">計息開始</span><span class="rule-value">2025-12-08
+                    23:00</span>
+            </div>
+            <div class="rule-item">
+                <div class="rule-dot"></div><span class="rule-label">首筆收益發放</span><span class="rule-value">2025-12-09
+                    23:00</span>
+            </div>
 
             <div class="section-label">策略優勢</div>
             <div class="strategy-features">
                 <div class="feature-item">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/><circle cx="20" cy="9" r="1.5" fill="rgba(0,244,255,1)"/></svg></div>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)"
+                            stroke-width="2">
+                            <path d="M3 3v18h18" />
+                            <path d="M7 14l4-4 4 4 5-5" />
+                            <circle cx="20" cy="9" r="1.5" fill="rgba(0,244,255,1)" />
+                        </svg></div>
                     <div class="feature-content">
                         <div class="feature-title">量化算法驅動</div>
                         <div class="feature-desc">數學模型 + AI算法，精準捕捉市場機會</div>
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg></div>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 6v6l4 2" />
+                        </svg></div>
                     <div class="feature-content">
                         <div class="feature-title">歷史回測驗證</div>
                         <div class="feature-desc">真實歷史數據驗證，勝率、收益、回撤全透明</div>
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                        </svg></div>
                     <div class="feature-content">
                         <div class="feature-title">多元資產配置</div>
                         <div class="feature-desc">跨市場多幣種配置，有效分散單一資產風險</div>
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)" stroke-width="2"><path d="M12 2l9 4.5v5c0 5-3.5 9.7-9 11.5-5.5-1.8-9-6.5-9-11.5v-5L12 2z"/><path d="M9 12l2 2 4-4"/></svg></div>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)"
+                            stroke-width="2">
+                            <path d="M12 2l9 4.5v5c0 5-3.5 9.7-9 11.5-5.5-1.8-9-6.5-9-11.5v-5L12 2z" />
+                            <path d="M9 12l2 2 4-4" />
+                        </svg></div>
                     <div class="feature-content">
                         <div class="feature-title">動態風控管理</div>
                         <div class="feature-desc">24小時智能監控，自動調倉與風險對沖</div>
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)" stroke-width="2"><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/><circle cx="12" cy="12" r="3"/><path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg></div>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)"
+                            stroke-width="2">
+                            <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" />
+                        </svg></div>
                     <div class="feature-content">
                         <div class="feature-title">自動操作</div>
                         <div class="feature-desc">自動買賣訂單，省時省力</div>
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)" stroke-width="2"><path d="M2 12c2-3 5-5 10-5s8 2 10 5c-2 3-5 5-10 5s-8-2-10-5z"/><path d="M7 17l2-5 3 3 4-6 3 4"/></svg></div>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)"
+                            stroke-width="2">
+                            <path d="M2 12c2-3 5-5 10-5s8 2 10 5c-2 3-5 5-10 5s-8-2-10-5z" />
+                            <path d="M7 17l2-5 3 3 4-6 3 4" />
+                        </svg></div>
                     <div class="feature-content">
                         <div class="feature-title">從波動中獲利</div>
                         <div class="feature-desc">抓住小幅波動機會獲利</div>
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="rgba(0,244,255,1)"/></svg></div>
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,244,255,1)"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="9" />
+                            <circle cx="12" cy="12" r="5" />
+                            <circle cx="12" cy="12" r="1" fill="rgba(0,244,255,1)" />
+                        </svg></div>
                     <div class="feature-content">
                         <div class="feature-title">策略穩定</div>
                         <div class="feature-desc">保持穩定的交易方式</div>
@@ -319,6 +976,8 @@
                 <div class="analysis-chart-box">
                     <canvas id="returnCompareChart"></canvas>
                 </div>
+                <div class="analysis-chart-desc">多元资产配置：通过稳健收益 +
+                    热点收益两条曲线构建双引擎结构，以长期主流资产稳定增值为基础，再结合中短期热点轮动捕捉额外利润，通过科学的仓位管理实现收益与风险的平衡。</div>
             </div>
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">因子收益貢獻</div>
@@ -349,68 +1008,96 @@
                 <div class="doc-section-title">一、列表页卡片增加更多数据展示</div>
                 <div class="doc-section-text">
                     <div class="doc-line"><span class="doc-key">参与人数：</span>列表展示实时参与人数。
-                        <div class="doc-subline pending">参与人数的起始值，以及日后增加的随机策略为：待定。</div>
+                        <div class="doc-subline">起始值：热纽扣=998,921 / Alpha主动=713,422 / 双向平衡=301,322 / Alpha稳健=145,634。
+                        </div>
+                        <div class="doc-subline">每日增加：热纽扣=5555×3±100 / Alpha主动=3333×3±100 / 双向平衡=1333×3±100 /
+                            Alpha稳健=888×3±100。</div>
                     </div>
-                    <div class="doc-line"><span class="doc-key">收益额：</span>展示累计收益额。
-                        <div class="doc-subline pending">收益额的起始值，以及日后增加的随机策略为：待定。</div>
+                    <div class="doc-line"><span class="doc-key">累计收益率：</span>展示策略累计收益率。
+                        <div class="doc-subline">范围：220%-600% 随机，每 90 天重新随机一次。</div>
                     </div>
-                    <div class="doc-line"><span class="doc-key">收益额图表：</span>列表卡片内保持迷你折线图，横坐标为最近 7 天的小时数据，零轴使用虚线，盈利段为绿色、亏损段为红色。</div>
+                    <div class="doc-line"><span class="doc-key">累计收益率图表：</span>列表卡片内保持迷你折线图，横坐标为最近 90
+                        天的每日数据，零轴使用虚线，盈利段为绿色、亏损段为红色。
+                        <div class="doc-subline">每日收益率 = 累计收益率 ÷ 90 ± 0.5%。</div>
+                    </div>
                     <div class="doc-line"><span class="doc-key">运行时间：</span>展示策略当前运行时长。
                         <div class="doc-subline pending">运行时间的计算口径：待定。</div>
                     </div>
-                    <div class="doc-line"><span class="doc-key">7 天最大回撤：</span>展示最近 7 天回撤指标。
-                        <div class="doc-subline">按最近 7 天收益计算，公式：最大回撤 = (最近 7 天内的最高收益峰值 - 当前收益) / 最近 7 天内的最高收益峰值。</div>
-                    </div>
+                    <div class="doc-line"><span class="doc-key">近 30 天最大回撤：</span>展示最近 30 天回撤指标，范围为 3%-9% 随机，每 30
+                        天重新随机一次。</div>
                 </div>
             </div>
             <div class="doc-section">
                 <div class="doc-section-title">二、详情页增加数据展示</div>
                 <div class="doc-section-text">
-                    <div class="doc-line"><span class="doc-key">历史盈利表格：</span>展示历史收益明细。
-                        <div class="doc-subline">横坐标：最近 7 天的小时图。</div>
-                        <div class="doc-subline">纵坐标：收益额，单位 USDT，刻度自适应（按数据范围自动取近似千位刻度）。</div>
-                        <div class="doc-subline pending">收益额（USDT）：对应时间的收益金额，起始值及增加策略：待定。</div>
+                    <div class="doc-line"><span class="doc-key">历史盈利图表：</span>展示累计收益率走势。
+                        <div class="doc-subline">横坐标：最近 90 天（日维度）。</div>
+                        <div class="doc-subline">纵坐标：无数字标签，仅显示零轴虚线。</div>
+                        <div class="doc-subline">折线走势：使用三层不同周期的波浪叠加 + 每日随机噪声，生成整体向上但有明显起伏的 90 天走势。</div>
+                        <div class="doc-subline">计算公式：value = base + wave1 + wave2 + wave3 + noise</div>
+                        <div class="doc-subline" style="padding-left:20px;">• base = (当前天数 / 90) × 100（基础上升趋势）</div>
+                        <div class="doc-subline" style="padding-left:20px;">• wave1 = sin(i × 0.3 + seed) × 15（长周期波动）
+                        </div>
+                        <div class="doc-subline" style="padding-left:20px;">• wave2 = sin(i × 0.15 + seed × 2) ×
+                            10（中周期波动）</div>
+                        <div class="doc-subline" style="padding-left:20px;">• wave3 = sin(i × 0.5 + seed × 0.5) ×
+                            5（短周期波动）</div>
+                        <div class="doc-subline" style="padding-left:20px;">• noise = random() × 8（随机噪声 ±4）</div>
+                        <div class="doc-subline">颜色规则：零轴以上显示绿色，零轴以下显示红色。</div>
                         <div class="doc-subline">收益率（%）：对应理财包配置的收益率区间。</div>
-                        <div class="doc-subline pending">累计收益：截至当时的累计收益，起始值：待定。</div>
+                        <div class="doc-subline">累计收益率：220%-600% 随机，每 90 天重新随机一次。</div>
                     </div>
                     <div class="doc-line"><span class="doc-key">策略优势文案：</span>突出策略亮点与差异化。</div>
                     <div class="doc-line"><span class="doc-key">组合收益表格：</span>列出组合收益数据。
-                        <div class="doc-subline">横坐标：最近 31 天（日维度）。</div>
+                        <div class="doc-subline">横坐标：最近 30 天（日维度），从 D1 开始。</div>
                         <div class="doc-subline">纵坐标：收益率%，刻度自适应。</div>
                         <div class="doc-subline">组合收益：对应理财包配置的收益率随机。</div>
                         <div class="doc-subline">基准收益：组合收益减去 5%-8% 随机的基准曲线。</div>
                         <div class="doc-subline">Alpha：组合收益与基准的差值曲线。</div>
                     </div>
                     <div class="doc-line"><span class="doc-key">因子收益贡献：</span>展示各因子对收益的贡献。
-                        <div class="doc-subline pending">每个因子的起始值和增加策略：待定。</div>
+                        <div class="doc-subline">更新频率：每日更新（同一天内值保持不变）。</div>
+                        <div class="doc-subline">動量：+1.5% ~ +4.0%（趋势跟踪，贡献最大）</div>
+                        <div class="doc-subline">價值：+1.0% ~ +3.0%（低估值选股）</div>
+                        <div class="doc-subline">質量：+0.8% ~ +2.5%（高质量公司）</div>
+                        <div class="doc-subline">波動率：-1.5% ~ -0.3%（风险控制代价，负值）</div>
+                        <div class="doc-subline">規模：+0.3% ~ +1.2%（市值偏好，贡献较小）</div>
+                        <div class="doc-subline">流動性：+0.8% ~ +2.0%（流动性溢价）</div>
                     </div>
                     <div class="doc-code-list">
                         <div class="doc-code-card">
-                            <div class="doc-code-head">策略文案 1 <button class="doc-copy-btn" onclick="copyDocText('strategyText1', this)">复制</button></div>
+                            <div class="doc-code-head">策略文案 1 <button class="doc-copy-btn"
+                                    onclick="copyDocText('strategyText1', this)">复制</button></div>
                             <pre class="doc-code"><code id="strategyText1">量化算法驱动：数学模型 + AI 算法，精准捕捉市场机会。</code></pre>
                         </div>
                         <div class="doc-code-card">
-                            <div class="doc-code-head">策略文案 2 <button class="doc-copy-btn" onclick="copyDocText('strategyText2', this)">复制</button></div>
+                            <div class="doc-code-head">策略文案 2 <button class="doc-copy-btn"
+                                    onclick="copyDocText('strategyText2', this)">复制</button></div>
                             <pre class="doc-code"><code id="strategyText2">历史回测验证：基于真实历史数据，胜率、收益、回撤全透明。</code></pre>
                         </div>
                         <div class="doc-code-card">
-                            <div class="doc-code-head">策略文案 3 <button class="doc-copy-btn" onclick="copyDocText('strategyText3', this)">复制</button></div>
+                            <div class="doc-code-head">策略文案 3 <button class="doc-copy-btn"
+                                    onclick="copyDocText('strategyText3', this)">复制</button></div>
                             <pre class="doc-code"><code id="strategyText3">多元资产配置：跨市场多币种分散风险，降低单一资产波动影响。</code></pre>
                         </div>
                         <div class="doc-code-card">
-                            <div class="doc-code-head">策略文案 4 <button class="doc-copy-btn" onclick="copyDocText('strategyText4', this)">复制</button></div>
+                            <div class="doc-code-head">策略文案 4 <button class="doc-copy-btn"
+                                    onclick="copyDocText('strategyText4', this)">复制</button></div>
                             <pre class="doc-code"><code id="strategyText4">动态风控管理：24 小时智能监控，自动调仓与风险对冲。</code></pre>
                         </div>
                         <div class="doc-code-card">
-                            <div class="doc-code-head">策略文案 5 <button class="doc-copy-btn" onclick="copyDocText('strategyText5', this)">复制</button></div>
+                            <div class="doc-code-head">策略文案 5 <button class="doc-copy-btn"
+                                    onclick="copyDocText('strategyText5', this)">复制</button></div>
                             <pre class="doc-code"><code id="strategyText5">自动操作：自动买卖下单，节省盯盘与操作时间。</code></pre>
                         </div>
                         <div class="doc-code-card">
-                            <div class="doc-code-head">策略文案 6 <button class="doc-copy-btn" onclick="copyDocText('strategyText6', this)">复制</button></div>
+                            <div class="doc-code-head">策略文案 6 <button class="doc-copy-btn"
+                                    onclick="copyDocText('strategyText6', this)">复制</button></div>
                             <pre class="doc-code"><code id="strategyText6">从波动中获利：捕捉小幅波动机会，实现稳健收益。</code></pre>
                         </div>
                         <div class="doc-code-card">
-                            <div class="doc-code-head">策略文案 7 <button class="doc-copy-btn" onclick="copyDocText('strategyText7', this)">复制</button></div>
+                            <div class="doc-code-head">策略文案 7 <button class="doc-copy-btn"
+                                    onclick="copyDocText('strategyText7', this)">复制</button></div>
                             <pre class="doc-code"><code id="strategyText7">策略稳定：保持一致的交易逻辑，减少情绪化干扰。</code></pre>
                         </div>
                     </div>
@@ -420,62 +1107,63 @@
     </div>
 
     <script>
-        // 生成模拟7天小时收益数据的图表
-        function generateChart(container, seed) {
-            const width = 120, height = 50, points = 168; // 7天每小时一个点
-            const midY = height / 2;
+        // 生成90天累计收益率走势的mini图表
+        // 公式：每日收益率 = (累计收益率 ÷ 90) × (1 ± 15%)
+        function generateChart(container, seed, totalReturn) {
+            const width = 120, height = 50, days = 90;
 
-            // 使用seed生成伪随机数
             const random = (s) => {
                 const x = Math.sin(s) * 10000;
                 return x - Math.floor(x);
             };
 
-            // 生成模拟收益数据点
+            // 生成曲折向上的走势（正弦波叠加）
             let data = [];
-            let value = 0;
-            for (let i = 0; i < points; i++) {
-                value += (random(seed + i) - 0.45) * 8; // 略微偏向盈利
-                data.push(value);
+            for (let i = 0; i < days; i++) {
+                const progress = i / days;
+                const base = progress * 100;
+                const wave1 = Math.sin(i * 0.3 + seed) * 15;
+                const wave2 = Math.sin(i * 0.15 + seed * 2) * 10;
+                const wave3 = Math.sin(i * 0.5 + seed * 0.5) * 5;
+                const noise = (random(seed + i) - 0.5) * 8;
+                data.push(base + wave1 + wave2 + wave3 + noise);
             }
 
-            // 归一化到图表高度
-            const minVal = Math.min(...data);
             const maxVal = Math.max(...data);
-            const range = Math.max(Math.abs(minVal), Math.abs(maxVal)) * 2 || 1;
+            const minVal = Math.min(0, Math.min(...data));
+            const range = maxVal - minVal || 1;
 
             const pointsArr = data.map((v, i) => {
-                const x = (i / (points - 1)) * width;
-                const y = midY - (v / range) * (height - 10);
+                const x = (i / (days - 1)) * width;
+                const y = height - 5 - ((v - minVal) / range) * (height - 10);
                 return { x, y, value: v };
             });
 
-            // 构建SVG路径 - 分段绘制绿色和红色
+            const zeroY = height - 5 - ((0 - minVal) / range) * (height - 10);
+
+            // 分段绘制红绿色
             let greenPath = '', redPath = '';
             for (let i = 0; i < pointsArr.length - 1; i++) {
                 const p1 = pointsArr[i], p2 = pointsArr[i + 1];
-
                 if (p1.value >= 0 && p2.value >= 0) {
                     greenPath += `M${p1.x},${p1.y} L${p2.x},${p2.y} `;
                 } else if (p1.value < 0 && p2.value < 0) {
                     redPath += `M${p1.x},${p1.y} L${p2.x},${p2.y} `;
                 } else {
-                    // 跨越零线，计算交叉点
                     const ratio = Math.abs(p1.value) / (Math.abs(p1.value) + Math.abs(p2.value));
                     const crossX = p1.x + (p2.x - p1.x) * ratio;
-                    const crossY = midY;
                     if (p1.value >= 0) {
-                        greenPath += `M${p1.x},${p1.y} L${crossX},${crossY} `;
-                        redPath += `M${crossX},${crossY} L${p2.x},${p2.y} `;
+                        greenPath += `M${p1.x},${p1.y} L${crossX},${zeroY} `;
+                        redPath += `M${crossX},${zeroY} L${p2.x},${p2.y} `;
                     } else {
-                        redPath += `M${p1.x},${p1.y} L${crossX},${crossY} `;
-                        greenPath += `M${crossX},${crossY} L${p2.x},${p2.y} `;
+                        redPath += `M${p1.x},${p1.y} L${crossX},${zeroY} `;
+                        greenPath += `M${crossX},${zeroY} L${p2.x},${p2.y} `;
                     }
                 }
             }
 
             const svg = `<svg viewBox="0 0 ${width} ${height}">
-                <line x1="0" y1="${midY}" x2="${width}" y2="${midY}" stroke="#555" stroke-width="1" stroke-dasharray="3,2"/>
+                <line x1="0" y1="${zeroY}" x2="${width}" y2="${zeroY}" stroke="#555" stroke-width="1" stroke-dasharray="3,2"/>
                 <path d="${greenPath}" fill="none" stroke="#0d956f" stroke-width="1.5" stroke-linecap="round"/>
                 <path d="${redPath}" fill="none" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round"/>
             </svg>`;
@@ -483,79 +1171,84 @@
             container.innerHTML = svg;
         }
 
-        // 初始化所有图表，并给卡片存储seed
         document.querySelectorAll('.card').forEach((card, index) => {
             const seed = (index + 1) * 123.456;
             card.dataset.chartSeed = seed;
+            const profitValueEl = card.querySelector('.card-profit-value');
+            const profitText = profitValueEl ? profitValueEl.textContent : '+300%';
+            const totalReturn = parseFloat(profitText.replace(/[+%]/g, '')) || 300;
+            card.dataset.totalReturn = totalReturn;
             const chart = card.querySelector('.card-chart');
-            if (chart) generateChart(chart, seed);
+            if (chart) generateChart(chart, seed, totalReturn);
         });
 
-        // 详情页交互式图表
         let detailChartData = [];
-        function generateDetailChart(container, seed = 12345) {
+        function generateDetailChart(container, seed, totalReturn) {
             const width = container.clientWidth || 340;
             const height = 160;
             const padding = { left: 50, right: 16, top: 10, bottom: 30 };
             const chartW = width - padding.left - padding.right;
             const chartH = height - padding.top - padding.bottom;
+            const days = 90;
 
-            // 使用与列表页相同的伪随机算法
             const random = (s) => {
                 const x = Math.sin(s) * 10000;
                 return x - Math.floor(x);
             };
 
-            // 生成168小时数据（7天，与列表页一致）
+            // 生成曲折向上的走势（使用正弦波叠加）
             const points = [];
-            let value = 0;
-            const startDate = new Date('2024-12-01T00:00:00');
-            for (let i = 0; i < 168; i++) {
-                const date = new Date(startDate.getTime() + i * 3600000);
-                value += (random(seed + i) - 0.45) * 800; // 与列表页相同的算法
-                points.push({ hour: i, value: value, date: date });
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            for (let i = 0; i < days; i++) {
+                const date = new Date(startDate.getTime() + i * 86400000);
+                const progress = i / days; // 0 到 1
+                // 基础趋势：从0上升到100
+                const base = progress * 100;
+                // 叠加多个正弦波产生波动
+                const wave1 = Math.sin(i * 0.3 + seed) * 15;
+                const wave2 = Math.sin(i * 0.15 + seed * 2) * 10;
+                const wave3 = Math.sin(i * 0.5 + seed * 0.5) * 5;
+                const noise = (random(seed + i) - 0.5) * 8;
+                const value = base + wave1 + wave2 + wave3 + noise;
+                points.push({ day: i, value: value, date: date });
             }
             detailChartData = points;
 
             const values = points.map(p => p.value);
-            const minVal = Math.min(...values);
             const maxVal = Math.max(...values);
-            const range = Math.max(Math.abs(maxVal), Math.abs(minVal)) * 1.2;
+            const minVal = Math.min(...values);
+            const range = maxVal - minVal || 1;
 
-            // Y轴刻度
-            const yTicks = [-range, -range/2, 0, range/2, range].map(v => Math.round(v / 1000) * 1000);
-            const yLabels = yTicks.map(v => {
-                const y = padding.top + chartH / 2 - (v / range) * (chartH / 2);
-                return `<text x="${padding.left - 8}" y="${y + 4}" fill="#666" font-size="11" text-anchor="end">${(v/1000).toFixed(0)}${v !== 0 ? ',000' : ''}</text>`;
-            }).join('');
+            // 去掉Y轴数字标签
+            const yLabels = '';
 
-            // X轴刻度（每天一个，共7天）
-            const xLabels = [0, 24, 48, 72, 96, 120, 144, 168].map(h => {
-                const x = padding.left + (h / 168) * chartW;
-                const d = new Date(startDate.getTime() + h * 3600000);
-                const label = `${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+            const xLabels = [0, 15, 30, 45, 60, 75, 90].map(d => {
+                const x = padding.left + (d / days) * chartW;
+                const date = new Date(startDate.getTime() + d * 86400000);
+                const label = `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
                 return `<text x="${x}" y="${height - 6}" fill="#666" font-size="10" text-anchor="middle">${label}</text>`;
             }).join('');
 
-            // 计算坐标
             const coords = points.map((p, i) => ({
                 x: padding.left + (i / (points.length - 1)) * chartW,
-                y: padding.top + chartH / 2 - (p.value / range) * (chartH / 2)
+                y: padding.top + chartH - ((p.value - minVal) / range) * chartH
             }));
 
-            // 绘制路径（红绿分离）
-            const zeroY = padding.top + chartH / 2;
+            const zeroY = padding.top + chartH - ((0 - minVal) / range) * chartH;
+
+            // 分段绘制红绿色
             let greenPath = '', redPath = '';
             for (let i = 0; i < coords.length - 1; i++) {
                 const p1 = coords[i], p2 = coords[i + 1];
                 const v1 = points[i].value, v2 = points[i + 1].value;
                 if (v1 >= 0 && v2 >= 0) {
-                    greenPath += (greenPath.includes(`L${p1.x}`) ? '' : `M${p1.x},${p1.y} `) + `L${p2.x},${p2.y} `;
+                    greenPath += `M${p1.x},${p1.y} L${p2.x},${p2.y} `;
                 } else if (v1 < 0 && v2 < 0) {
-                    redPath += (redPath.includes(`L${p1.x}`) ? '' : `M${p1.x},${p1.y} `) + `L${p2.x},${p2.y} `;
+                    redPath += `M${p1.x},${p1.y} L${p2.x},${p2.y} `;
                 } else {
                     const ratio = Math.abs(v1) / (Math.abs(v1) + Math.abs(v2));
-                    const crossX = p1.x + ratio * (p2.x - p1.x);
+                    const crossX = p1.x + (p2.x - p1.x) * ratio;
                     if (v1 >= 0) {
                         greenPath += `M${p1.x},${p1.y} L${crossX},${zeroY} `;
                         redPath += `M${crossX},${zeroY} L${p2.x},${p2.y} `;
@@ -583,7 +1276,7 @@
             const container = document.getElementById('detailChart');
             const tooltip = document.getElementById('chartTooltip');
 
-            container.addEventListener('click', function(e) {
+            container.addEventListener('click', function (e) {
                 const rect = container.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const paddingLeft = parseFloat(container.dataset.paddingLeft);
@@ -597,11 +1290,11 @@
                 if (!point) return;
 
                 const d = point.date;
-                const timeStr = `${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:00`;
-                const valueStr = (point.value >= 0 ? '+' : '') + point.value.toFixed(2);
-                const colorClass = point.value >= 0 ? 'green' : 'red';
+                const timeStr = `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+                const valueStr = point.value.toFixed(2) + '%';
+                const dailyStr = (point.dailyReturn >= 0 ? '+' : '') + point.dailyReturn.toFixed(2) + '%';
 
-                tooltip.innerHTML = `<div class="tooltip-time">${timeStr}</div><div class="tooltip-value ${colorClass}">收益額: ${valueStr}</div>`;
+                tooltip.innerHTML = `<div class="tooltip-time">${timeStr}</div><div class="tooltip-value green">累計: ${valueStr}</div><div class="tooltip-value green">當日: ${dailyStr}</div>`;
                 tooltip.style.left = (x - 50) + 'px';
                 tooltip.style.top = '40px';
                 tooltip.classList.add('show');
@@ -610,13 +1303,10 @@
             });
         }
 
-        // Chart.js 图表实例
         let returnCompareChart, factorContribChart;
         let chartTime = 0;
         let chartUpdateInterval = null;
         let currentRateMin = 18, currentRateMax = 20;
-
-        // 基准差值（组合比基准高5%-8%）
         const benchmarkGap = 5 + Math.random() * 3;
 
         function generateReturnData() {
@@ -624,21 +1314,17 @@
             const portfolioData = [];
             const benchmarkData = [];
             const alphaData = [];
-
             const rateCenter = (currentRateMin + currentRateMax) / 2;
             const rateRange = (currentRateMax - currentRateMin) / 2;
 
-            for (let i = 0; i <= 30; i++) {
+            for (let i = 1; i <= 30; i++) {
                 labels.push(`D${i}`);
-                // 组合收益在承诺范围内波动
                 const progress = i / 30;
                 const wave = Math.sin(i * 0.25 + chartTime * 0.05) * rateRange * 0.8;
                 const portfolio = currentRateMin + (rateCenter - currentRateMin) * progress + wave + Math.sin(chartTime * 0.03) * 0.5;
                 const portfolioFinal = Math.max(currentRateMin * 0.9, portfolio);
-                // 基准收益 = 组合收益 - 5%~8%
                 const benchmark = portfolioFinal - benchmarkGap + Math.sin(i * 0.15) * 0.5;
                 const alpha = portfolioFinal - benchmark;
-
                 portfolioData.push(portfolioFinal.toFixed(2));
                 benchmarkData.push(benchmark.toFixed(2));
                 alphaData.push(alpha.toFixed(2));
@@ -646,21 +1332,49 @@
             return { labels, portfolioData, benchmarkData, alphaData };
         }
 
+        // 因子基准值（每日更新，同一天值相同）
+        let factorBaseValues = null;
+        let factorDateSeed = null;
+        function initFactorBaseValues() {
+            // 使用当天日期作为种子，同一天值相同
+            const today = new Date();
+            const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+
+            // 如果日期没变，不重新生成
+            if (factorDateSeed === dateSeed && factorBaseValues) return;
+            factorDateSeed = dateSeed;
+
+            // 使用种子生成伪随机数
+            const seededRandom = (seed) => {
+                const x = Math.sin(seed) * 10000;
+                return x - Math.floor(x);
+            };
+
+            factorBaseValues = {
+                momentum: 1.5 + seededRandom(dateSeed * 1.1) * 2.5,    // 動量: 1.5% ~ 4.0%
+                value: 1.0 + seededRandom(dateSeed * 1.2) * 2.0,       // 價值: 1.0% ~ 3.0%
+                quality: 0.8 + seededRandom(dateSeed * 1.3) * 1.7,     // 質量: 0.8% ~ 2.5%
+                volatility: -(0.3 + seededRandom(dateSeed * 1.4) * 1.2), // 波動率: -1.5% ~ -0.3%
+                size: 0.3 + seededRandom(dateSeed * 1.5) * 0.9,        // 規模: 0.3% ~ 1.2%
+                liquidity: 0.8 + seededRandom(dateSeed * 1.6) * 1.2    // 流動性: 0.8% ~ 2.0%
+            };
+        }
+
         function generateFactorData() {
+            if (!factorBaseValues) initFactorBaseValues();
+            // 在基准值上加微小波动
             return [
-                { name: '動量', value: 2.5 + Math.sin(chartTime * 0.08) * 1.2 },
-                { name: '價值', value: 1.8 + Math.cos(chartTime * 0.06) * 0.8 },
-                { name: '質量', value: 1.5 + Math.sin(chartTime * 0.09 + 1) * 0.6 },
-                { name: '波動率', value: -0.8 + Math.sin(chartTime * 0.07) * 0.5 },
-                { name: '規模', value: 0.6 + Math.cos(chartTime * 0.1) * 0.4 },
-                { name: '流動性', value: 1.2 + Math.sin(chartTime * 0.05 + 2) * 0.7 }
+                { name: '動量', value: factorBaseValues.momentum + Math.sin(chartTime * 0.08) * 0.3 },
+                { name: '價值', value: factorBaseValues.value + Math.cos(chartTime * 0.06) * 0.2 },
+                { name: '質量', value: factorBaseValues.quality + Math.sin(chartTime * 0.09) * 0.15 },
+                { name: '波動率', value: factorBaseValues.volatility + Math.sin(chartTime * 0.07) * 0.1 },
+                { name: '規模', value: factorBaseValues.size + Math.cos(chartTime * 0.1) * 0.1 },
+                { name: '流動性', value: factorBaseValues.liquidity + Math.sin(chartTime * 0.05) * 0.2 }
             ];
         }
 
         function initAnalysisCharts() {
             const returnData = generateReturnData();
-
-            // 组合收益 vs 基准 折线图
             const returnCtx = document.getElementById('returnCompareChart').getContext('2d');
             if (returnCompareChart) returnCompareChart.destroy();
             returnCompareChart = new Chart(returnCtx, {
@@ -668,105 +1382,43 @@
                 data: {
                     labels: returnData.labels,
                     datasets: [
-                        {
-                            label: '組合收益',
-                            data: returnData.portfolioData,
-                            borderColor: 'rgba(0, 244, 255, 1)',
-                            backgroundColor: 'rgba(0, 244, 255, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            borderWidth: 2
-                        },
-                        {
-                            label: '基準收益',
-                            data: returnData.benchmarkData,
-                            borderColor: '#666',
-                            backgroundColor: 'transparent',
-                            tension: 0.4,
-                            pointRadius: 0,
-                            borderWidth: 2
-                        },
-                        {
-                            label: 'Alpha',
-                            data: returnData.alphaData,
-                            borderColor: '#0d956f',
-                            backgroundColor: 'transparent',
-                            tension: 0.4,
-                            pointRadius: 0,
-                            borderWidth: 2
-                        }
+                        { label: '組合收益', data: returnData.portfolioData, borderColor: 'rgba(0, 244, 255, 1)', backgroundColor: 'rgba(0, 244, 255, 0.1)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                        { label: '基準收益', data: returnData.benchmarkData, borderColor: '#666', backgroundColor: 'transparent', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                        { label: 'Alpha', data: returnData.alphaData, borderColor: '#0d956f', backgroundColor: 'transparent', tension: 0.4, pointRadius: 0, borderWidth: 2 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#888', boxWidth: 12, padding: 15 }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#888', boxWidth: 12, padding: 15 } } },
                     scales: {
-                        x: {
-                            grid: { color: '#333' },
-                            ticks: { color: '#666', maxTicksLimit: 6 }
-                        },
-                        y: {
-                            grid: { color: '#333' },
-                            ticks: {
-                                color: '#666',
-                                callback: function(value) { return value + '%'; }
-                            }
-                        }
+                        x: { grid: { color: '#333' }, ticks: { color: '#666', maxTicksLimit: 6 } },
+                        y: { grid: { color: '#333' }, ticks: { color: '#666', callback: function (value) { return value + '%'; } } }
                     }
                 }
             });
 
-            // 因子收益贡献 柱状图
             const factors = generateFactorData();
-
             const contribCtx = document.getElementById('factorContribChart').getContext('2d');
             if (factorContribChart) factorContribChart.destroy();
             factorContribChart = new Chart(contribCtx, {
                 type: 'bar',
                 data: {
                     labels: factors.map(f => f.name),
-                    datasets: [{
-                        label: '貢獻率 %',
-                        data: factors.map(f => f.value.toFixed(2)),
-                        backgroundColor: factors.map(f => f.value >= 0 ? 'rgba(0, 244, 255, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
-                        borderColor: factors.map(f => f.value >= 0 ? 'rgba(0, 244, 255, 1)' : '#ef4444'),
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }]
+                    datasets: [{ label: '貢獻率 %', data: factors.map(f => f.value.toFixed(2)), backgroundColor: factors.map(f => f.value >= 0 ? 'rgba(0, 244, 255, 0.7)' : 'rgba(239, 68, 68, 0.7)'), borderColor: factors.map(f => f.value >= 0 ? 'rgba(0, 244, 255, 1)' : '#ef4444'), borderWidth: 1, borderRadius: 4 }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#888' }
-                        },
-                        y: {
-                            grid: { color: '#333' },
-                            ticks: { color: '#666' }
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false }, ticks: { color: '#888' } }, y: { grid: { color: '#333' }, ticks: { color: '#666' } } }
                 }
             });
 
-            // 启动动态更新
             if (chartUpdateInterval) clearInterval(chartUpdateInterval);
             chartUpdateInterval = setInterval(updateAnalysisCharts, 800);
         }
 
         function updateAnalysisCharts() {
             chartTime++;
-
             if (returnCompareChart) {
                 const newData = generateReturnData();
                 returnCompareChart.data.datasets[0].data = newData.portfolioData;
@@ -774,7 +1426,6 @@
                 returnCompareChart.data.datasets[2].data = newData.alphaData;
                 returnCompareChart.update('none');
             }
-
             if (factorContribChart) {
                 const factors = generateFactorData();
                 factorContribChart.data.datasets[0].data = factors.map(f => f.value.toFixed(2));
@@ -790,73 +1441,49 @@
             document.getElementById('minAmount').textContent = card.dataset.min + ' USDT';
             document.getElementById('maxAmount').textContent = card.dataset.max + ' USDT';
             document.getElementById('amountInput').placeholder = '最少起投: ' + card.dataset.min.replace(',', '');
-
-            // 获取该产品的收益率范围
             currentRateMin = parseFloat(card.dataset.rateMin) || 18;
             currentRateMax = parseFloat(card.dataset.rateMax) || 20;
-            chartTime = 0; // 重置图表时间
-
-            // 更新历史盈利的收益率区间
+            chartTime = 0;
+            initFactorBaseValues(); // 每次进入详情页重新随机因子值
             document.getElementById('detailYieldRate').textContent = currentRateMin + '%-' + currentRateMax + '%';
-
+            const totalReturn = parseFloat(card.dataset.totalReturn) || 300;
+            document.getElementById('detailProfit').textContent = '+' + totalReturn.toFixed(1) + '%';
             document.getElementById('listPage').classList.remove('active');
             document.getElementById('detailPage').classList.add('active');
-
-            // 获取卡片的图表seed
             const chartSeed = parseFloat(card.dataset.chartSeed) || 123.456;
-
-            // 延迟绘制图表确保容器可见
             setTimeout(() => {
-                generateDetailChart(document.getElementById('detailChart'), chartSeed);
+                generateDetailChart(document.getElementById('detailChart'), chartSeed, totalReturn);
                 setupChartInteraction();
                 initAnalysisCharts();
             }, 100);
         }
+
         function goBack() {
             document.getElementById('detailPage').classList.remove('active');
             document.getElementById('listPage').classList.add('active');
-            // 停止图表更新
-            if (chartUpdateInterval) {
-                clearInterval(chartUpdateInterval);
-                chartUpdateInterval = null;
-            }
+            if (chartUpdateInterval) { clearInterval(chartUpdateInterval); chartUpdateInterval = null; }
         }
+
         function openDocs() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('docsPage').classList.add('active');
-            // 关闭可能存在的动态图表更新
-            if (chartUpdateInterval) {
-                clearInterval(chartUpdateInterval);
-                chartUpdateInterval = null;
-            }
+            if (chartUpdateInterval) { clearInterval(chartUpdateInterval); chartUpdateInterval = null; }
         }
+
         function closeDocs() {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('listPage').classList.add('active');
         }
+
         function copyDocText(id, btn) {
             const text = document.getElementById(id)?.innerText || '';
             if (!text) return;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text);
-            } else {
-                const temp = document.createElement('textarea');
-                temp.value = text;
-                document.body.appendChild(temp);
-                temp.select();
-                document.execCommand('copy');
-                document.body.removeChild(temp);
-            }
-            if (btn) {
-                btn.textContent = '已复制';
-                btn.classList.add('copied');
-                clearTimeout(btn._copyTimer);
-                btn._copyTimer = setTimeout(() => {
-                    btn.textContent = '复制';
-                    btn.classList.remove('copied');
-                }, 1200);
-            }
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text); }
+            else { const temp = document.createElement('textarea'); temp.value = text; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp); }
+            if (btn) { btn.textContent = '已复制'; btn.classList.add('copied'); clearTimeout(btn._copyTimer); btn._copyTimer = setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 1200); }
         }
     </script>
+
 </body>
+
 </html>
