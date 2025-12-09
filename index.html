@@ -970,14 +970,12 @@
                 </div>
             </div>
 
-            <div class="section-label">收益分析</div>
+            <div class="section-label">策略介绍</div>
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">組合收益 vs 基準</div>
                 <div class="analysis-chart-box">
                     <canvas id="returnCompareChart"></canvas>
                 </div>
-                <div class="analysis-chart-desc">多元资产配置：通过稳健收益 +
-                    热点收益两条曲线构建双引擎结构，以长期主流资产稳定增值为基础，再结合中短期热点轮动捕捉额外利润，通过科学的仓位管理实现收益与风险的平衡。</div>
             </div>
             <div class="analysis-chart-card">
                 <div class="analysis-chart-title">因子收益貢獻</div>
@@ -1048,12 +1046,14 @@
                         <div class="doc-subline">累计收益率：220%-600% 随机，每 90 天重新随机一次。</div>
                     </div>
                     <div class="doc-line"><span class="doc-key">策略优势文案：</span>突出策略亮点与差异化。</div>
-                    <div class="doc-line"><span class="doc-key">组合收益表格：</span>列出组合收益数据。
-                        <div class="doc-subline">横坐标：最近 30 天（日维度），从 D1 开始。</div>
-                        <div class="doc-subline">纵坐标：收益率%，刻度自适应。</div>
-                        <div class="doc-subline">组合收益：对应理财包配置的收益率随机。</div>
-                        <div class="doc-subline">基准收益：组合收益减去 5%-8% 随机的基准曲线。</div>
-                        <div class="doc-subline">Alpha：组合收益与基准的差值曲线。</div>
+                    <div class="doc-line"><span class="doc-key">组合收益图表：</span>三条曲线动态绘制动画。
+                        <div class="doc-subline">横坐标：无标签，7 个关键节点。</div>
+                        <div class="doc-subline">纵坐标：收益率%，无背景网格。</div>
+                        <div class="doc-subline">数据：固定 7 组数值，通过插值生成 50 个平滑点。</div>
+                        <div class="doc-subline">組合收益：16.5, 17.2, 18.8, 17.5, 19.2, 18.6, 19.8</div>
+                        <div class="doc-subline">基準收益：10.2, 11.5, 12.8, 11.2, 13.5, 12.9, 14.2</div>
+                        <div class="doc-subline">Alpha：6.3, 5.7, 6.0, 6.3, 5.7, 5.7, 5.6</div>
+                        <div class="doc-subline">动画效果：从左到右平滑绘制，每 100ms 添加一个点，5 秒跑完后等待 5 秒循环。</div>
                     </div>
                     <div class="doc-line"><span class="doc-key">因子收益贡献：</span>展示各因子对收益的贡献。
                         <div class="doc-subline">更新频率：每日更新（同一天内值保持不变）。</div>
@@ -1310,89 +1310,88 @@
         const benchmarkGap = 5 + Math.random() * 3;
 
         function generateReturnData() {
-            const labels = [];
+            // 7个关键点，用插值生成50个平滑点
+            const keyPoints = {
+                portfolio: [16.5, 17.2, 18.8, 17.5, 19.2, 18.6, 19.8],
+                benchmark: [10.2, 11.5, 12.8, 11.2, 13.5, 12.9, 14.2],
+                alpha: [6.3, 5.7, 6.0, 6.3, 5.7, 5.7, 5.6]
+            };
+
+            const totalPoints = 50;
+            const labels = Array(totalPoints).fill('');
             const portfolioData = [];
             const benchmarkData = [];
             const alphaData = [];
-            const rateCenter = (currentRateMin + currentRateMax) / 2;
-            const rateRange = (currentRateMax - currentRateMin) / 2;
 
-            for (let i = 1; i <= 30; i++) {
-                labels.push(`D${i}`);
-                const progress = i / 30;
-                const wave = Math.sin(i * 0.25 + chartTime * 0.05) * rateRange * 0.8;
-                const portfolio = currentRateMin + (rateCenter - currentRateMin) * progress + wave + Math.sin(chartTime * 0.03) * 0.5;
-                const portfolioFinal = Math.max(currentRateMin * 0.9, portfolio);
-                const benchmark = portfolioFinal - benchmarkGap + Math.sin(i * 0.15) * 0.5;
-                const alpha = portfolioFinal - benchmark;
-                portfolioData.push(portfolioFinal.toFixed(2));
-                benchmarkData.push(benchmark.toFixed(2));
-                alphaData.push(alpha.toFixed(2));
+            for (let i = 0; i < totalPoints; i++) {
+                const t = i / (totalPoints - 1) * (keyPoints.portfolio.length - 1);
+                const idx = Math.floor(t);
+                const frac = t - idx;
+                const nextIdx = Math.min(idx + 1, keyPoints.portfolio.length - 1);
+
+                // 线性插值
+                portfolioData.push(keyPoints.portfolio[idx] + (keyPoints.portfolio[nextIdx] - keyPoints.portfolio[idx]) * frac);
+                benchmarkData.push(keyPoints.benchmark[idx] + (keyPoints.benchmark[nextIdx] - keyPoints.benchmark[idx]) * frac);
+                alphaData.push(keyPoints.alpha[idx] + (keyPoints.alpha[nextIdx] - keyPoints.alpha[idx]) * frac);
             }
-            return { labels, portfolioData, benchmarkData, alphaData };
+
+            return { labels, portfolioData, benchmarkData, alphaData, totalPoints };
         }
 
-        // 因子基准值（每日更新，同一天值相同）
-        let factorBaseValues = null;
-        let factorDateSeed = null;
-        function initFactorBaseValues() {
-            // 使用当天日期作为种子，同一天值相同
-            const today = new Date();
-            const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-
-            // 如果日期没变，不重新生成
-            if (factorDateSeed === dateSeed && factorBaseValues) return;
-            factorDateSeed = dateSeed;
-
-            // 使用种子生成伪随机数
-            const seededRandom = (seed) => {
-                const x = Math.sin(seed) * 10000;
-                return x - Math.floor(x);
-            };
-
-            factorBaseValues = {
-                momentum: 1.5 + seededRandom(dateSeed * 1.1) * 2.5,    // 動量: 1.5% ~ 4.0%
-                value: 1.0 + seededRandom(dateSeed * 1.2) * 2.0,       // 價值: 1.0% ~ 3.0%
-                quality: 0.8 + seededRandom(dateSeed * 1.3) * 1.7,     // 質量: 0.8% ~ 2.5%
-                volatility: -(0.3 + seededRandom(dateSeed * 1.4) * 1.2), // 波動率: -1.5% ~ -0.3%
-                size: 0.3 + seededRandom(dateSeed * 1.5) * 0.9,        // 規模: 0.3% ~ 1.2%
-                liquidity: 0.8 + seededRandom(dateSeed * 1.6) * 1.2    // 流動性: 0.8% ~ 2.0%
-            };
-        }
+        // 因子固定两个值，在之间平滑移动
+        const factorRanges = {
+            momentum: [2.8, 3.6],    // 動量
+            value: [1.8, 2.4],       // 價值
+            quality: [1.2, 1.8],     // 質量
+            volatility: [-1.0, -0.6], // 波動率（负值）
+            size: [0.6, 1.0],        // 規模
+            liquidity: [1.2, 1.6]    // 流動性
+        };
 
         function generateFactorData() {
-            if (!factorBaseValues) initFactorBaseValues();
-            // 在基准值上加微小波动
+            // 用正弦波在两值之间平滑移动，每个因子不同相位
+            const t = chartTime * 0.05;
+            const lerp = (range, phase) => {
+                const ratio = (Math.sin(t + phase) + 1) / 2; // 0~1
+                return range[0] + (range[1] - range[0]) * ratio;
+            };
             return [
-                { name: '動量', value: factorBaseValues.momentum + Math.sin(chartTime * 0.08) * 0.3 },
-                { name: '價值', value: factorBaseValues.value + Math.cos(chartTime * 0.06) * 0.2 },
-                { name: '質量', value: factorBaseValues.quality + Math.sin(chartTime * 0.09) * 0.15 },
-                { name: '波動率', value: factorBaseValues.volatility + Math.sin(chartTime * 0.07) * 0.1 },
-                { name: '規模', value: factorBaseValues.size + Math.cos(chartTime * 0.1) * 0.1 },
-                { name: '流動性', value: factorBaseValues.liquidity + Math.sin(chartTime * 0.05) * 0.2 }
+                { name: '動量', value: lerp(factorRanges.momentum, 0) },
+                { name: '價值', value: lerp(factorRanges.value, 1) },
+                { name: '質量', value: lerp(factorRanges.quality, 2) },
+                { name: '波動率', value: lerp(factorRanges.volatility, 3) },
+                { name: '規模', value: lerp(factorRanges.size, 4) },
+                { name: '流動性', value: lerp(factorRanges.liquidity, 5) }
             ];
         }
 
+        // 动画相关变量
+        let returnChartAnimationStep = 0;
+        let returnChartTargetData = null;
+
         function initAnalysisCharts() {
-            const returnData = generateReturnData();
+            returnChartTargetData = generateReturnData();
+            returnChartAnimationStep = 0;
+
             const returnCtx = document.getElementById('returnCompareChart').getContext('2d');
             if (returnCompareChart) returnCompareChart.destroy();
             returnCompareChart = new Chart(returnCtx, {
                 type: 'line',
                 data: {
-                    labels: returnData.labels,
+                    labels: returnChartTargetData.labels,
                     datasets: [
-                        { label: '組合收益', data: returnData.portfolioData, borderColor: 'rgba(0, 244, 255, 1)', backgroundColor: 'rgba(0, 244, 255, 0.1)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                        { label: '基準收益', data: returnData.benchmarkData, borderColor: '#666', backgroundColor: 'transparent', tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                        { label: 'Alpha', data: returnData.alphaData, borderColor: '#0d956f', backgroundColor: 'transparent', tension: 0.4, pointRadius: 0, borderWidth: 2 }
+                        { label: '組合收益', data: [], borderColor: 'rgba(0, 244, 255, 1)', backgroundColor: 'rgba(0, 244, 255, 0.1)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                        { label: '基準收益', data: [], borderColor: '#666', backgroundColor: 'transparent', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                        { label: 'Alpha', data: [], borderColor: '#0d956f', backgroundColor: 'transparent', tension: 0.4, pointRadius: 0, borderWidth: 2 }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
+                    animation: { duration: 400, easing: 'linear' },
                     plugins: { legend: { labels: { color: '#888', boxWidth: 12, padding: 15 } } },
                     scales: {
-                        x: { grid: { color: '#333' }, ticks: { color: '#666', maxTicksLimit: 6 } },
-                        y: { grid: { color: '#333' }, ticks: { color: '#666', callback: function (value) { return value + '%'; } } }
+                        x: { grid: { display: false }, ticks: { display: false } },
+                        y: { grid: { display: false }, ticks: { color: '#666', callback: function (value) { return value + '%'; } }, suggestedMin: 5, suggestedMax: 25 }
                     }
                 }
             });
@@ -1414,18 +1413,34 @@
             });
 
             if (chartUpdateInterval) clearInterval(chartUpdateInterval);
-            chartUpdateInterval = setInterval(updateAnalysisCharts, 800);
+            // 50个点在5秒内跑完，每100ms添加一个点
+            chartUpdateInterval = setInterval(updateReturnChartAnimation, 100);
         }
 
-        function updateAnalysisCharts() {
+        function updateReturnChartAnimation() {
             chartTime++;
-            if (returnCompareChart) {
-                const newData = generateReturnData();
-                returnCompareChart.data.datasets[0].data = newData.portfolioData;
-                returnCompareChart.data.datasets[1].data = newData.benchmarkData;
-                returnCompareChart.data.datasets[2].data = newData.alphaData;
-                returnCompareChart.update('none');
+            const totalPoints = returnChartTargetData.totalPoints || 50;
+
+            if (returnChartAnimationStep < totalPoints) {
+                // 逐步push数据点，让线条像蛇一样平滑画出
+                returnCompareChart.data.datasets[0].data.push(returnChartTargetData.portfolioData[returnChartAnimationStep]);
+                returnCompareChart.data.datasets[1].data.push(returnChartTargetData.benchmarkData[returnChartAnimationStep]);
+                returnCompareChart.data.datasets[2].data.push(returnChartTargetData.alphaData[returnChartAnimationStep]);
+                returnCompareChart.update('none'); // 无动画更快
+                returnChartAnimationStep++;
+            } else if (returnChartAnimationStep === totalPoints) {
+                // 画完后等2秒再重新开始
+                returnChartAnimationStep = totalPoints + 1;
+                setTimeout(() => {
+                    returnChartAnimationStep = 0;
+                    returnCompareChart.data.datasets[0].data = [];
+                    returnCompareChart.data.datasets[1].data = [];
+                    returnCompareChart.data.datasets[2].data = [];
+                    returnCompareChart.update('none');
+                }, 5000);
             }
+
+            // 更新因子图表
             if (factorContribChart) {
                 const factors = generateFactorData();
                 factorContribChart.data.datasets[0].data = factors.map(f => f.value.toFixed(2));
@@ -1444,7 +1459,6 @@
             currentRateMin = parseFloat(card.dataset.rateMin) || 18;
             currentRateMax = parseFloat(card.dataset.rateMax) || 20;
             chartTime = 0;
-            initFactorBaseValues(); // 每次进入详情页重新随机因子值
             document.getElementById('detailYieldRate').textContent = currentRateMin + '%-' + currentRateMax + '%';
             const totalReturn = parseFloat(card.dataset.totalReturn) || 300;
             document.getElementById('detailProfit').textContent = '+' + totalReturn.toFixed(1) + '%';
