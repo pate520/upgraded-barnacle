@@ -1249,10 +1249,25 @@ function random(s) {
     return x - Math.floor(x);
 }
 
-// 2. 每个产品固定的 seed（存数据库，不能变）
-const seed = 1.5;
+// 2. 每个产品固定的 seed（见下方表格）</code></pre>
 
-// 3. 计算今天是产品上线后的第几天
+                        <div style="margin: 12px 0; padding: 12px; background: #0a0a0a; border-radius: 8px;">
+                            <div class="doc-subline" style="padding: 0; margin-bottom: 8px;"><strong>四个产品的 seed
+                                    值：</strong></div>
+                            <div class="doc-subline" style="padding: 0; padding-left: 12px;">• AI Copy 熱紐扣驅動策略：<strong
+                                    style="color: rgba(0, 244, 255, 1);">123.456</strong></div>
+                            <div class="doc-subline" style="padding: 0; padding-left: 12px;">• AI Copy
+                                Alpha主動式管理策略：<strong style="color: rgba(0, 244, 255, 1);">246.912</strong></div>
+                            <div class="doc-subline" style="padding: 0; padding-left: 12px;">• AI雙向平衡策略：<strong
+                                    style="color: rgba(0, 244, 255, 1);">370.368</strong></div>
+                            <div class="doc-subline" style="padding: 0; padding-left: 12px;">• AI Alpha穩健策略-多幣種：<strong
+                                    style="color: rgba(0, 244, 255, 1);">493.824</strong></div>
+                            <div class="doc-subline" style="padding: 0; margin-top: 8px; color: #888; font-size: 11px;">
+                                规律：seed = 产品序号 × 123.456</div>
+                        </div>
+
+                        <pre
+                            style="background: #0a0a0a; padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin: 8px 0;"><code style="color: #ddd;">// 3. 计算今天是产品上线后的第几天
 const startDate = new Date('2024-11-05'); // 产品开始日期
 const today = new Date();
 const i = Math.floor((today - startDate) / 86400000);
@@ -1286,6 +1301,50 @@ const todayValue = base + wave1 + wave2 + wave3 + noise;</code></pre>
                             后 base 继续增长，这是正常的（模拟持续盈利）</div>
                         <div class="doc-subline" style="padding-left: 20px;">4. <strong>伪随机函数必须一致</strong>：前后端用相同的
                             random() 实现</div>
+                    </div>
+
+                    <div class="doc-line"
+                        style="margin-top: 20px; padding: 16px; background: #111; border-radius: 12px; border: 1px solid #333;">
+                        <span class="doc-key" style="font-size: 15px;">👥 前后端分工建议</span>
+
+                        <div class="doc-subline"
+                            style="margin-top: 16px; padding: 12px; background: rgba(0, 244, 255, 0.08); border-radius: 8px; border-left: 3px solid rgba(0, 244, 255, 1);">
+                            <strong style="color: rgba(0, 244, 255, 1);">方案 A：前端计算（推荐）</strong>
+                            <div class="doc-subline" style="margin-top: 8px;"><strong>后端职责：</strong></div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 数据库存储每个产品的 seed 和 startDate</div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 提供 API 返回产品信息（含 seed、startDate）</div>
+                            <div class="doc-subline" style="margin-top: 8px;"><strong>前端职责：</strong></div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 实现公式计算逻辑（与本文档一致）</div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 根据 seed 和 startDate 实时计算90天数据</div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 绘制图表和处理交互</div>
+                            <div class="doc-subline" style="margin-top: 8px;"><strong>优点：</strong>后端简单，减少接口数据量</div>
+                            <div class="doc-subline"><strong>缺点：</strong>前端需要实现相同的公式逻辑</div>
+                        </div>
+
+                        <div class="doc-subline"
+                            style="margin-top: 12px; padding: 12px; background: #1a1a1a; border-radius: 8px; border-left: 3px solid #666;">
+                            <strong>方案 B：后端计算</strong>
+                            <div class="doc-subline" style="margin-top: 8px;"><strong>后端职责：</strong></div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 存储 seed 和 startDate</div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 每天定时任务或实时计算90天数据</div>
+                            <div class="doc-subline" style="padding-left: 20px;">• API 返回完整的90天数据数组</div>
+                            <div class="doc-subline" style="margin-top: 8px;"><strong>前端职责：</strong></div>
+                            <div class="doc-subline" style="padding-left: 20px;">• 接收数据直接渲染图表</div>
+                            <div class="doc-subline" style="margin-top: 8px;"><strong>优点：</strong>前端简单，只需渲染</div>
+                            <div class="doc-subline"><strong>缺点：</strong>后端需要额外计算，接口数据量大</div>
+                        </div>
+
+                        <div class="doc-subline" style="margin-top: 12px;"><strong>API 示例（方案A）：</strong></div>
+                        <pre
+                            style="background: #0a0a0a; padding: 10px; border-radius: 6px; font-size: 11px; margin: 6px 0;"><code style="color: #ddd;">GET /api/products/1
+{
+  "id": 1,
+  "name": "AI Copy 熱紐扣驅動策略",
+  "seed": 123.456,
+  "startDate": "2024-11-05",
+  "rateMin": 18,
+  "rateMax": 20
+}</code></pre>
                     </div>
                 </div>
             </div>
