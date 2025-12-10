@@ -1048,6 +1048,8 @@
                         <div class="doc-subline" style="padding-left:20px;">• wave3 = sin(i × 0.5 + seed × 0.5) ×
                             5（短周期波动）</div>
                         <div class="doc-subline" style="padding-left:20px;">• noise = random() × 8（随机噪声 ±4）</div>
+                        <div class="doc-subline" style="color: rgba(0, 244, 255, 1); margin-top: 8px;">👇
+                            详细说明见本文档最下方「公式详细说明」</div>
                         <div class="doc-subline">颜色规则：零轴以上显示绿色，零轴以下显示红色。</div>
                         <div class="doc-subline">收益率（%）：对应理财包配置的收益率区间。</div>
                         <div class="doc-subline">累计收益率：220%-600% 随机，每 90 天重新随机一次。</div>
@@ -1118,6 +1120,172 @@
                     <div class="doc-line"><span class="doc-key">预计收益：</span>默认展示最大盈利区间。
                         <div class="doc-subline">输入框没有值时，展示最大起投金额 × 该理财包的收益率区间。</div>
                         <div class="doc-subline">没有余额时输入值，预计收益也应该随输入的变化而变化（PC 的 BUG）。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-section" id="formulaDetail">
+                <div class="doc-section-title">📐 公式详细说明（开发参考）</div>
+                <div class="doc-section-text">
+                    <div class="doc-line"
+                        style="margin-bottom: 16px; padding: 12px; background: rgba(0, 244, 255, 0.08); border-radius: 8px; border-left: 3px solid rgba(0, 244, 255, 1);">
+                        <strong>核心公式：</strong><code
+                            style="background: #222; padding: 2px 6px; border-radius: 4px;">value = base + wave1 + wave2 + wave3 + noise</code>
+                    </div>
+
+                    <div class="doc-line"><span class="doc-key">1. base（基础上升趋势）</span>
+                        <div class="doc-subline">公式：<code
+                                style="background: #222; padding: 2px 6px; border-radius: 4px;">base = (i / 90) × 100</code>
+                        </div>
+                        <div class="doc-subline">• i = 当前是第几天（从0开始，到89结束）</div>
+                        <div class="doc-subline">• 90 = 总天数（固定值）</div>
+                        <div class="doc-subline">• 100 = 最终目标收益百分比</div>
+                        <div class="doc-subline">• 作用：让收益曲线整体从 0% 线性增长到约 100%</div>
+                        <div class="doc-subline" style="margin-top: 8px;"><strong>计算示例：</strong></div>
+                        <div class="doc-subline" style="padding-left: 20px;">第0天: (0/90)×100 = 0%</div>
+                        <div class="doc-subline" style="padding-left: 20px;">第30天: (30/90)×100 = 33.3%</div>
+                        <div class="doc-subline" style="padding-left: 20px;">第45天: (45/90)×100 = 50%</div>
+                        <div class="doc-subline" style="padding-left: 20px;">第89天: (89/90)×100 = 98.9%</div>
+                    </div>
+
+                    <div class="doc-line"><span class="doc-key">2. wave1（长周期波动）</span>
+                        <div class="doc-subline">公式：<code
+                                style="background: #222; padding: 2px 6px; border-radius: 4px;">wave1 = Math.sin(i × 0.3 + seed) × 15</code>
+                        </div>
+                        <div class="doc-subline">• i = 当前天数</div>
+                        <div class="doc-subline">• 0.3 = 频率控制（值越小周期越长）</div>
+                        <div class="doc-subline">• seed = 随机种子（让每个产品曲线不同）</div>
+                        <div class="doc-subline">• 15 = 振幅（波动幅度上下各 ±15%）</div>
+                        <div class="doc-subline">• 周期计算：2π / 0.3 ≈ <strong>20.9天</strong>一个完整周期</div>
+                        <div class="doc-subline">• 作用：模拟市场的长期周期性波动（类似月度行情）</div>
+                    </div>
+
+                    <div class="doc-line"><span class="doc-key">3. wave2（中周期波动）</span>
+                        <div class="doc-subline">公式：<code
+                                style="background: #222; padding: 2px 6px; border-radius: 4px;">wave2 = Math.sin(i × 0.15 + seed × 2) × 10</code>
+                        </div>
+                        <div class="doc-subline">• 0.15 = 频率控制（比wave1慢一倍）</div>
+                        <div class="doc-subline">• seed × 2 = 相位偏移（与wave1错开）</div>
+                        <div class="doc-subline">• 10 = 振幅（上下各 ±10%）</div>
+                        <div class="doc-subline">• 周期计算：2π / 0.15 ≈ <strong>41.9天</strong>一个完整周期</div>
+                        <div class="doc-subline">• 作用：模拟中期市场趋势（类似双周调整）</div>
+                    </div>
+
+                    <div class="doc-line"><span class="doc-key">4. wave3（短周期波动）</span>
+                        <div class="doc-subline">公式：<code
+                                style="background: #222; padding: 2px 6px; border-radius: 4px;">wave3 = Math.sin(i × 0.5 + seed × 0.5) × 5</code>
+                        </div>
+                        <div class="doc-subline">• 0.5 = 更高频率（波动更快）</div>
+                        <div class="doc-subline">• seed × 0.5 = 相位偏移</div>
+                        <div class="doc-subline">• 5 = 较小振幅（上下各 ±5%）</div>
+                        <div class="doc-subline">• 周期计算：2π / 0.5 ≈ <strong>12.6天</strong>一个完整周期</div>
+                        <div class="doc-subline">• 作用：模拟短期市场波动（类似周级别涨跌）</div>
+                    </div>
+
+                    <div class="doc-line"><span class="doc-key">5. noise（随机噪声）</span>
+                        <div class="doc-subline">公式：<code
+                                style="background: #222; padding: 2px 6px; border-radius: 4px;">noise = (random(seed + i) - 0.5) × 8</code>
+                        </div>
+                        <div class="doc-subline" style="margin-top: 8px;"><strong>伪随机函数定义：</strong></div>
+                        <div class="doc-subline" style="padding-left: 20px;"><code
+                                style="background: #222; padding: 2px 6px; border-radius: 4px;">random(s) = (Math.sin(s) × 10000) 的小数部分</code>
+                        </div>
+                        <div class="doc-subline" style="margin-top: 8px;"><strong>计算步骤：</strong></div>
+                        <div class="doc-subline" style="padding-left: 20px;">1. random(seed + i) → 返回 0~1 之间的伪随机数</div>
+                        <div class="doc-subline" style="padding-left: 20px;">2. 减去 0.5 → 变成 -0.5~0.5</div>
+                        <div class="doc-subline" style="padding-left: 20px;">3. 乘以 8 → 最终范围 <strong>-4% ~ +4%</strong>
+                        </div>
+                        <div class="doc-subline" style="margin-top: 8px;"><strong>特点：</strong></div>
+                        <div class="doc-subline" style="padding-left: 20px;">✅ 可复现：相同 seed+i 永远产生相同结果</div>
+                        <div class="doc-subline" style="padding-left: 20px;">✅ 刷新不变：用户刷新页面，同一天的数据不会改变</div>
+                        <div class="doc-subline">• 作用：增加真实性，模拟不可预测的日内波动</div>
+                    </div>
+
+                    <div class="doc-line"
+                        style="margin-top: 16px; padding: 12px; background: #1a1a1a; border-radius: 8px;">
+                        <span class="doc-key">📊 计算示例（第30天，seed=1.5）</span>
+                        <div class="doc-subline" style="padding-left: 20px;">base = (30/90)×100 =
+                            <strong>+33.33%</strong>
+                        </div>
+                        <div class="doc-subline" style="padding-left: 20px;">wave1 = sin(30×0.3+1.5)×15 =
+                            <strong>≈-12.68%</strong>
+                        </div>
+                        <div class="doc-subline" style="padding-left: 20px;">wave2 = sin(30×0.15+3)×10 =
+                            <strong>≈+9.38%</strong>
+                        </div>
+                        <div class="doc-subline" style="padding-left: 20px;">wave3 = sin(30×0.5+0.75)×5 =
+                            <strong>≈+1.05%</strong>
+                        </div>
+                        <div class="doc-subline" style="padding-left: 20px;">noise = 伪随机 = <strong>≈+2.1%</strong></div>
+                        <div class="doc-subline"
+                            style="padding-left: 20px; color: rgba(0, 244, 255, 1); font-weight: 600;">总计 value ≈ 33.18%
+                        </div>
+                    </div>
+
+                    <div class="doc-line" style="margin-top: 16px;">
+                        <span class="doc-key">🔧 参数调整指南</span>
+                        <div class="doc-subline" style="padding-left: 20px;">• 让整体涨幅更大 → 增大 base 的乘数（100→150）</div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 让波动更剧烈 → 增大 wave 的振幅（15→20）</div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 让波动更平缓 → 减小 wave 的振幅（15→8）</div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 让长周期更长 → 减小 wave1 的频率（0.3→0.1）</div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 让随机性更大 → 增大 noise 的乘数（8→12）</div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 让随机性更小 → 减小 noise 的乘数（8→4）</div>
+                    </div>
+
+                    <div class="doc-line"
+                        style="margin-top: 20px; padding: 16px; background: linear-gradient(135deg, rgba(0, 244, 255, 0.08), rgba(0, 244, 255, 0.02)); border-radius: 12px; border: 1px solid rgba(0, 244, 255, 0.2);">
+                        <span class="doc-key" style="font-size: 15px;">🔄 后端每日更新实现（重点）</span>
+
+                        <div class="doc-subline" style="margin-top: 12px;"><strong>核心原理：</strong></div>
+                        <div class="doc-subline" style="padding-left: 20px;">公式使用<strong>伪随机函数</strong>，相同的 seed + i
+                            永远产生相同结果</div>
+                        <div class="doc-subline" style="padding-left: 20px;">因此历史数据可以随时重新计算，不需要存储</div>
+
+                        <div class="doc-subline" style="margin-top: 12px;"><strong>后端每日计算逻辑：</strong></div>
+                        <pre
+                            style="background: #0a0a0a; padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto; margin: 8px 0;"><code style="color: #ddd;">// 1. 定义伪随机函数（必须和前端一致）
+function random(s) {
+    const x = Math.sin(s) * 10000;
+    return x - Math.floor(x);
+}
+
+// 2. 每个产品固定的 seed（存数据库，不能变）
+const seed = 1.5;
+
+// 3. 计算今天是产品上线后的第几天
+const startDate = new Date('2024-11-05'); // 产品开始日期
+const today = new Date();
+const i = Math.floor((today - startDate) / 86400000);
+
+// 4. 用公式计算今天的值
+const base = (i / 90) * 100;
+const wave1 = Math.sin(i * 0.3 + seed) * 15;
+const wave2 = Math.sin(i * 0.15 + seed * 2) * 10;
+const wave3 = Math.sin(i * 0.5 + seed * 0.5) * 5;
+const noise = (random(seed + i) - 0.5) * 8;
+const todayValue = base + wave1 + wave2 + wave3 + noise;</code></pre>
+
+                        <div class="doc-subline" style="margin-top: 12px;"><strong>数据如何"续上"：</strong></div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 始终显示最近 90 天的数据</div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 每天新增一个点，最早的一天滚动删除</div>
+                        <div class="doc-subline" style="padding-left: 20px;">• 因为公式固定，历史数据重算后完全一致</div>
+
+                        <div style="margin-top: 10px; padding: 8px 12px; background: #1a1a1a; border-radius: 6px;">
+                            <div class="doc-subline" style="padding: 0;">第90天: 显示第 1~90 天的数据</div>
+                            <div class="doc-subline" style="padding: 0;">第91天: 显示第 2~91 天的数据</div>
+                            <div class="doc-subline" style="padding: 0;">第100天: 显示第 11~100 天的数据</div>
+                        </div>
+
+                        <div class="doc-subline" style="margin-top: 12px; color: #ef4444;"><strong>⚠️ 注意事项：</strong>
+                        </div>
+                        <div class="doc-subline" style="padding-left: 20px;">1. <strong>seed 必须固定</strong>：每个产品的 seed
+                            存数据库，不能随意修改</div>
+                        <div class="doc-subline" style="padding-left: 20px;">2. <strong>用真实日期差算 i</strong>：不要用随机数或其他方式
+                        </div>
+                        <div class="doc-subline" style="padding-left: 20px;">3. <strong>base 会超过 100%</strong>：i &gt; 90
+                            后 base 继续增长，这是正常的（模拟持续盈利）</div>
+                        <div class="doc-subline" style="padding-left: 20px;">4. <strong>伪随机函数必须一致</strong>：前后端用相同的
+                            random() 实现</div>
                     </div>
                 </div>
             </div>
